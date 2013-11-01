@@ -3,6 +3,9 @@
 
     <string name="app_name">Ping</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="new_user">New</string>
+    <string name="login">Log In</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
 
 </resources>
