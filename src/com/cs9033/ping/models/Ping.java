@@ -1,6 +1,5 @@
 package com.cs9033.ping.models;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -9,14 +8,15 @@ import com.cs9033.ping.util.SerializableBitmap;
 public class Ping
 {
 	//JSON constants
-	private static final String JSON_SERVER_ID = "ping_serverid";
-	private static final String JSON_CREATOR_ID = "trip_creatorid";
-	private static final String JSON_CREATION_DATE = "ping_creationdate";
-	private static final String JSON_COORDS = "ping_coords";
-	private static final String JSON_HAS_IMAGE = "ping_hasimage";
-	private static final String JSON_RATING = "ping_rating";
-	private static final String JSON_MESSAGE = "ping_message";
-	private static final String JSON_IMAGE = "ping_image";
+	private static final String JSON_SERVER_ID = "id";
+	private static final String JSON_CREATOR_ID = "creator_id";
+	private static final String JSON_CREATION_DATE = "create_date";
+	private static final String JSON_LAT = "latitude";
+	private static final String JSON_LON = "longitude";
+	private static final String JSON_HAS_IMAGE = "has_image";
+	private static final String JSON_RATING = "rating";
+	private static final String JSON_MESSAGE = "message";
+	private static final String JSON_IMAGE = "b64image";
 	
 	//metadata
 	private String serverID; //UUID on server
@@ -66,10 +66,12 @@ public class Ping
 		json.put(JSON_CREATOR_ID, creatorID);
 		json.put(JSON_CREATION_DATE, creationDate);
 		
-		JSONArray coords = new JSONArray();
+		json.put(JSON_LAT, coordinates[0]);
+		json.put(JSON_LON, coordinates[1]);
+		/*JSONArray coords = new JSONArray();
 		coords.put(coordinates[0]);
 		coords.put(coordinates[1]);
-		json.put(JSON_COORDS, coords);
+		json.put(JSON_COORDS, coords);*/
 		
 		json.put(JSON_HAS_IMAGE, hasImage);
 		json.put(JSON_RATING, rating);
@@ -85,8 +87,8 @@ public class Ping
 		creatorID = json.getString(JSON_CREATOR_ID);
 		creationDate = json.getLong(JSON_CREATION_DATE);
 		
-		coordinates[0] = json.getJSONArray(JSON_COORDS).getDouble(0);
-		coordinates[1] = json.getJSONArray(JSON_COORDS).getDouble(1);
+		coordinates[0] = json.getDouble(JSON_LAT);
+		coordinates[1] = json.getDouble(JSON_LON);
 		
 		hasImage = json.getBoolean(JSON_HAS_IMAGE);
 		rating = json.getInt(JSON_RATING);

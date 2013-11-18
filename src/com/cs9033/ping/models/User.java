@@ -9,11 +9,14 @@ public class User
 	private String userID; //UUID on server
 	private double radius; //Radius to receive pings
 	private int numPingsRemaining; //Limit a user's number of pings per day
+	private String authToken; //Authentication token to access API
 	
-	private static final String JSON_USER_NAME = "user_name";
-	private static final String JSON_USER_ID = "user_id";
-	private static final String JSON_USER_RADIUS = "user_radius";
-	private static final String JSON_USER_REMAINING_PINGS = "user_remaining_pings";
+	//JSON Constants
+	private static final String JSON_USER_NAME = "name";
+	private static final String JSON_USER_ID = "id";
+	private static final String JSON_USER_RADIUS = "radius";
+	private static final String JSON_USER_REMAINING_PINGS = "remaining_pings";
+	private static final String JSON_AUTH_TOKEN = "auth";
 	
 	public User() {}
 	
@@ -36,6 +39,9 @@ public class User
 	public void setPingLimit(int num) { numPingsRemaining = num; }
 	public int getRemainingPings() { return numPingsRemaining; }
 	
+	public void setAuthToken(String token) { authToken = token; }
+	public String getAuthToken() { return authToken; }
+	
 	//Serialization methods
 	public JSONObject toJSON() throws JSONException
 	{
@@ -44,6 +50,7 @@ public class User
 		json.put(JSON_USER_ID, userID);
 		json.put(JSON_USER_RADIUS, radius);
 		json.put(JSON_USER_REMAINING_PINGS, numPingsRemaining);
+		json.put(JSON_AUTH_TOKEN, authToken);
 		return json;
 	}
 	
@@ -53,5 +60,6 @@ public class User
 		userID = json.getString(JSON_USER_ID);
 		radius = json.getDouble(JSON_USER_RADIUS);
 		numPingsRemaining = json.getInt(JSON_USER_REMAINING_PINGS);
+		authToken = json.getString(JSON_AUTH_TOKEN);
 	}
 }
