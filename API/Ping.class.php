@@ -1,6 +1,5 @@
 <?php
 require_once("db.php");
-
 class Ping
 {
 	const TABLE_NAME = "pings";
@@ -26,17 +25,20 @@ class Ping
 
 	public function __construct($data)
 	{
-		$this->id = $data[ID];
-		$this->creatorId = $data[CREATOR_ID];
-		$this->createDate = $data[CREATE_DATE];
-		$this->latitude = $data[LATITUDE];
-		$this->longitude = $data[LONGITUDE];
-		$this->hasImage = $data[HAS_IMG];
-		$this->rating = $data[RATING];
-		$this->message = $data[MESSAGE];
-		$this->b64image = $data[B64IMAGE];
+		global $PDOdb;
+		$this->db = $PDOdb;	
 
-		$stmt = $db->prepare("INSERT INTO ". TABLE_NAME ."(id,creator_id,create_date,latitude,longitude,has_image,rating,message,b64image) VALUES(:id,:creatorID,:createDate,:lat,:lon,:hasimg,:rating,:msg,:img)");
+		$this->id = $data[self::ID];
+		$this->creatorId = $data[self::CREATOR_ID];
+		$this->createDate = $data[self::CREATE_DATE];
+		$this->latitude = $data[self::LATITUDE];
+		$this->longitude = $data[self::LONGITUDE];
+		$this->hasImage = $data[self::HAS_IMG];
+		$this->rating = $data[self::RATING];
+		$this->message = $data[self::MESSAGE];
+		$this->b64image = $data[self::B64IMAGE];
+
+		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ."(id,creator_id,create_date,latitude,longitude,has_image,rating,message,b64image) VALUES(:id,:creatorID,:createDate,:lat,:lon,:hasimg,:rating,:msg,:img)");
 		$stmt->execute(array(':id' => $this->id, ':creatorID' => $this->creatorId, ':createDate' => $this->createDate, ':lat' => $this->latitude, ':long' => $this->longitude, ':hasimg' => $this->hasImage, ':rating' => $this->rating, ':msg' => $this->message, ':img' => $this->b64image));
 		if($stmt->rowCount() == 0)
 			return false;
@@ -50,7 +52,7 @@ class Ping
 	{
 		$this->rating = $newRating;
 
-		$stmt = $db->prepare("UPDATE ". TABLE_NAME ." SET ". RATING ."=:rating WHERE id=:id");
+		$stmt = $this->db->prepare("UPDATE ". self::TABLE_NAME ." SET ". self::RATING ."=:rating WHERE id=:id");
 		$stmt->execute(array(':rating' => $this->rating, ':id' => $this->id));
 		if($stmt->rowCount() == 0)
 			return false;
