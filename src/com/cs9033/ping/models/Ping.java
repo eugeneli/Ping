@@ -42,7 +42,7 @@ public class Ping
 	public void setCreationDate(long date) { creationDate = date; }
 	public long getCreationDate() { return creationDate; }
 	
-	public void setCoordinates(long latitude, long longitude) { coordinates = new double[]{latitude, longitude}; }
+	public void setCoordinates(double latitude, double longitude) { coordinates = new double[]{latitude, longitude}; }
 	public double[] getCoordinates() { return coordinates; }
 	
 	public boolean hasImage() { return hasImage; }
