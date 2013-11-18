@@ -3,4 +3,7 @@
     <color name="yellow">#ffffff00</color>
     <color name="light_gray">#ffeeeeee</color>
     <color name="light_blue">#ff00aaff</color>
+    <color name="lighter_blue">#ff00ccff</color>
+    <color name="see_thru_light_blue">#3300aaff</color>
+    <color name="see_thru_lighter_blue">#3300ccff</color>
 </resources>
