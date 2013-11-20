@@ -6,8 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="@color/yellow"
-    tools:context=".LoginActivity" >
+    android:background="@color/yellow" >
     
     <FrameLayout
         android:id="@+id/title"
@@ -35,11 +34,12 @@
         android:layout_height="fill_parent"
         android:layout_below="@id/title" >
 	    
-        <FrameLayout
+        <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-	        android:background="@android:color/black">
+	        android:background="@android:color/black"
+	        android:orientation="vertical">
 		    <LinearLayout
 		        android:layout_width="fill_parent"
 		        android:layout_height="wrap_content"
@@ -54,6 +54,7 @@
 			        android:layout_margin="16sp"
 			        android:background="@android:color/transparent"
 			        android:inputType="textNoSuggestions|textVisiblePassword"
+			        android:imeOptions="actionNext"
 			        android:hint="@string/username" >
 			
 			        <requestFocus />
@@ -66,32 +67,34 @@
 			        android:layout_margin="16sp"
 			        android:background="@android:color/transparent"
 			        android:inputType="textPassword"
+			        android:imeOptions="actionSend"
 			        android:hint="@string/password" />
-		    
-			    <LinearLayout
-			        android:layout_width="match_parent"
-			        android:layout_height="wrap_content"
-			        android:background="@android:color/black"
-			        android:orientation="horizontal" >
-			        
-					<Button style="@style/BlueButton"
-					    android:id="@+id/new_user"
-						android:layout_width="0dip"
-						android:layout_height="wrap_content"
-						android:layout_weight="1"
-					    android:text="@string/new_user" 
-					    android:layout_marginTop="1dp"
-					    android:layout_marginRight="1dp" />
-			        <Button style="@style/BlueButton"
-					    android:id="@+id/login"
-						android:layout_width="0dip"
-						android:layout_height="wrap_content"
-						android:layout_weight="1"
-					    android:text="@string/login"
-					    android:layout_marginTop="1dp" />
-					
-				</LinearLayout>
 			</LinearLayout>
-		</FrameLayout>
+	    
+		    <LinearLayout
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_marginLeft="1sp"
+		        android:layout_marginRight="1sp"
+		        android:layout_marginBottom="1sp"
+		        android:background="@android:color/black"
+		        android:orientation="horizontal" >
+		        
+				<Button style="@style/BlueButton"
+				    android:id="@+id/new_user"
+					android:layout_width="0dip"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:layout_marginRight="1sp"
+				    android:text="@string/new_user" />
+		        <Button style="@style/BlueButton"
+				    android:id="@+id/login"
+					android:layout_width="0dip"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+				    android:text="@string/login" />
+				
+			</LinearLayout>
+		</LinearLayout>
 	</RelativeLayout>
 </RelativeLayout>

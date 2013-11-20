@@ -14,9 +14,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 public class MainActivity extends FragmentActivity {
 	
@@ -63,6 +68,23 @@ public class MainActivity extends FragmentActivity {
 		});
 		mapPings = new HashMap<String, MapPing>();
 		
+		final Activity activity = this;
+		
+		((Button) findViewById(R.id.ping_create)).setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View view) {
+				Intent intent = new Intent(activity, CreatePingActivity.class);
+				activity.startActivity(intent);
+			}
+		});
+		((Button) findViewById(R.id.login)).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(activity, LoginActivity.class);
+				activity.startActivity(intent);
+			}
+		});
+
 	}
 	
 	public void updateRadius(double radius) {

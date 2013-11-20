@@ -22,19 +22,21 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.cs9033.ping.LoginActivity"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.Light.NoTitleBar"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name="com.cs9033.ping.MainActivity"
-            android:theme="@android:style/Theme.Light.NoTitleBar">
+            android:theme="@android:style/Theme.Light.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+            <activity
+            android:name="com.cs9033.ping.CreatePingActivity"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name="com.cs9033.ping.LoginActivity"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:windowSoftInputMode="adjustResize" />
         <meta-data android:name="com.google.android.gms.version"
             android:value="4030500" />
         <meta-data android:name="com.google.android.maps.v2.API_KEY"

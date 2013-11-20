@@ -19,7 +19,7 @@
     
     <style name="BlueButton" parent="@android:style/Widget.Button">
         <item name="android:background">@drawable/button</item>
-        <item name="android:textColor">@color/light_gray</item>
+        <item name="android:textColor">@color/button_text</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">36sp</item>
     </style>

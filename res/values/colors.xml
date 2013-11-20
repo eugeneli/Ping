@@ -6,4 +6,5 @@
     <color name="lighter_blue">#ff00ccff</color>
     <color name="see_thru_light_blue">#3300aaff</color>
     <color name="see_thru_lighter_blue">#3300ccff</color>
+    <color name="button_text">#ccffffff</color>
 </resources>
