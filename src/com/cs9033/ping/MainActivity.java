@@ -1,124 +1,150 @@
 package com.cs9033.ping;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.cs9033.ping.models.Ping;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
+import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
+import android.content.IntentSender.SendIntentException;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements OnFragmentLoadedListener  {
+	private static final String lastFragTag = "LAST_FRAGMENT";
+	private String lastFrag;
+	private LocationClient lc;
+	private int FIX_SHIT = 9001;
 	
-	private GoogleMap map;
-	
-	private class MapPing { //javaaaaaaa y u no tuple
-		public Marker marker;
-		public Circle circle;
-		public MapPing(Marker marker, Circle circle) {
-			this.marker = marker;
-			this.circle = circle;
+	private ConnectionCallbacks conn = new ConnectionCallbacks() {
+		@Override
+		public void onConnected(Bundle arg0) {
+			lc.requestLocationUpdates(new LocationRequest().setInterval(30000), ll);
 		}
-	}
+		@Override
+		public void onDisconnected() {
+		}
+	};
+	private OnConnectionFailedListener fail = new OnConnectionFailedListener() {
 
-	private double currentZoom = -1;
-	private double userRadius = 1;
-	private Circle myCircle;
-	private Map<String, MapPing> mapPings;
+		@Override
+		public void onConnectionFailed(ConnectionResult result) {
+			if (result.hasResolution())
+				try {
+					result.startResolutionForResult(MainActivity.this, FIX_SHIT);
+				} catch (SendIntentException e) {
+					e.printStackTrace();
+				}
+			
+		}
+	};
 	
+	private LocationListener ll = new LocationListener() {
+		@Override
+		public void onLocationChanged(Location loc) {
+			MainFragment fragment = (MainFragment) getSupportFragmentManager().findFragmentByTag(MainFragment.TAG);
+			if (fragment != null)
+				fragment.updateLocation(new LatLng(loc.getLatitude(), loc.getLongitude()));
+		}
+	};
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_map);
-		map = getMap();
-		currentZoom = map.getCameraPosition().zoom;
-		userRadius = 5 * Math.pow(2, map.getMaxZoomLevel() - currentZoom);
-		myCircle = map.addCircle(new CircleOptions()
-			.center(new LatLng(0, 0))
-			.radius(userRadius)
-			.fillColor(getResources().getColor(R.color.see_thru_lighter_blue))
-			.strokeColor(Color.GRAY)
-			.strokeWidth(2.0f));
-		map.getUiSettings().setZoomControlsEnabled(false);
-		map.setOnCameraChangeListener(new OnCameraChangeListener() {
-			@Override
-			public void onCameraChange(CameraPosition pos) {
-				if (pos.zoom != currentZoom) {
-					currentZoom = pos.zoom;
-					userRadius = 5 * Math.pow(2, map.getMaxZoomLevel() - currentZoom);
-					updateRadius(userRadius);
-				}
-			}
-			
-		});
-		mapPings = new HashMap<String, MapPing>();
+		setContentView(R.layout.activity_main);
 		
-		final Activity activity = this;
+		String lastFrag = (savedInstanceState != null ? savedInstanceState.getString(lastFragTag) : null);
+		changeViews(lastFrag != null ? lastFrag : MainFragment.TAG);
 		
-		((Button) findViewById(R.id.ping_create)).setOnClickListener(new OnClickListener(){
-			@Override
-			public void onClick(View view) {
-				Intent intent = new Intent(activity, CreatePingActivity.class);
-				activity.startActivity(intent);
-			}
-		});
-		((Button) findViewById(R.id.login)).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(activity, LoginActivity.class);
-				activity.startActivity(intent);
-			}
-		});
-
+		lc = new LocationClient(this, conn, fail);
+	}	
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		lc.connect();
 	}
 	
-	public void updateRadius(double radius) {
-		myCircle.setRadius(radius);
+	@Override
+	protected void onStop() {
+		if (lc.isConnected())
+			lc.removeLocationUpdates(ll);
+		lc.disconnect();
+		super.onStop();
 	}
 	
-	public void updateLocation(LatLng location) {
-		myCircle.setCenter(location);
-	}
-	
-	public void addOrUpdatePing(Ping ping) {
-		double[] coords = ping.getCoordinates();
-		LatLng latlng = new LatLng(coords[0], coords[1]);
-		
-		if (mapPings.containsKey(ping.getServerID())) {
-			MapPing mapPing = mapPings.get(ping.getServerID());
-			mapPing.marker.setPosition(latlng);
-			mapPing.circle.setCenter(latlng);
-			mapPing.circle.setRadius(ping.getRating());
-		}
-		else {
-			GoogleMap map = getMap();
-			Marker marker = map.addMarker(new MarkerOptions().position(latlng).title(ping.getMessage()));
-			Circle circle = map.addCircle(new CircleOptions()
-				.center(latlng)
-				.radius(ping.getRating())
-				.strokeColor(Color.GRAY)
-				.strokeWidth(2.0f));
-			mapPings.put(ping.getServerID(), new MapPing(marker, circle));
-		}
-	}
-	
-	private GoogleMap getMap() {
-		return ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode == Activity.RESULT_OK && requestCode == FIX_SHIT)
+			lc.connect();
 	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString(lastFragTag, lastFrag);
+	}
+
+	@Override
+	public void onBackPressed() {
+		FragmentManager manager = getSupportFragmentManager();
+		if (manager.getBackStackEntryCount() < 2)
+			finish();
+		else
+			super.onBackPressed();
+	}
+
+	private Fragment getFragment(String tag) {
+		Fragment frag = getSupportFragmentManager().findFragmentByTag(tag);
+		if (frag != null) return frag;
+		if (tag == MainFragment.TAG) return new MainFragment();
+		if (tag == LoginFragment.TAG) return new LoginFragment();
+		if (tag == CreatePingFragment.TAG) return new CreatePingFragment();
+		return null;
+	}
+	
+	public void changeViews(final String tag) {
+		FragmentManager fm = getSupportFragmentManager();
+		Fragment newFrag = getFragment(tag);
+		final Fragment newF = newFrag;
+
+		Fragment oldF = fm.findFragmentByTag(lastFrag);
+		if (oldF != null)
+			oldF.setUserVisibleHint(false);
+		
+		((ProgressBar) findViewById(R.id.loading)).setVisibility(View.VISIBLE);
+		((FrameLayout) findViewById(R.id.frame)).setVisibility(View.INVISIBLE);
+		
+		new Handler().post(new Runnable() {
+			@Override
+			public void run() {
+				FragmentTransaction ft = getSupportFragmentManager()
+						.beginTransaction()
+						.replace(R.id.frame, newF, tag);
+					ft.addToBackStack(null).commit();				
+			}
+		});
+		
+		lastFrag = tag;
+	}
+
+	@Override
+	public void onFragmentLoaded(Fragment fragment) {
+		((ProgressBar) findViewById(R.id.loading)).setVisibility(View.INVISIBLE);
+		((FrameLayout) findViewById(R.id.frame)).setVisibility(View.VISIBLE);
+		fragment.setUserVisibleHint(true);
+	}
+	
 }
