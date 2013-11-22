@@ -40,6 +40,7 @@ public class MainFragment extends Fragment {
 		}
 	}
 
+	private boolean posWasSaved = false;
 	private double currentZoom = -1;
 	private LatLng userLoc;
 	private double userRadius = 1;
@@ -90,8 +91,10 @@ public class MainFragment extends Fragment {
 			@Override
 			public void run() {
 				final GoogleMap map = getMap();
-				if (pos != null)
+				if (pos != null) {
+					posWasSaved = true;
 					map.moveCamera(CameraUpdateFactory.newCameraPosition(pos));
+				}
 				
 				currentZoom = map.getCameraPosition().zoom;
 				userRadius = 5 * Math.pow(2, map.getMaxZoomLevel() - currentZoom);
@@ -140,7 +143,7 @@ public class MainFragment extends Fragment {
 	}
 	
 	public void updateLocation(LatLng location) {
-		if (userLoc == null)
+		if (userLoc == null && !posWasSaved)
 			getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
 		userLoc = location;
 		if (myCircle != null)
