@@ -12,11 +12,12 @@ public class User
 	private String authToken; //Authentication token to access API
 	
 	//JSON Constants
-	private static final String JSON_USER_NAME = "name";
-	private static final String JSON_USER_ID = "id";
-	private static final String JSON_USER_RADIUS = "radius";
-	private static final String JSON_USER_REMAINING_PINGS = "remaining_pings";
-	private static final String JSON_AUTH_TOKEN = "auth";
+	public static final String JSON_USER_NAME = "name";
+	public static final String JSON_USER_PWD = "password";
+	public static final String JSON_USER_ID = "user_id";
+	public static final String JSON_USER_RADIUS = "radius";
+	public static final String JSON_USER_REMAINING_PINGS = "remaining_pings";
+	public static final String JSON_AUTH_TOKEN = "auth";
 	
 	public User() {}
 	

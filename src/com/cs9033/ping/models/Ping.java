@@ -8,7 +8,7 @@ import com.cs9033.ping.util.SerializableBitmap;
 public class Ping
 {
 	//JSON constants
-	private static final String JSON_SERVER_ID = "id";
+	private static final String JSON_SERVER_ID = "ping_id";
 	private static final String JSON_CREATOR_ID = "creator_id";
 	private static final String JSON_CREATION_DATE = "create_date";
 	private static final String JSON_LAT = "latitude";
