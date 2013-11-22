@@ -4,7 +4,7 @@ require_once("db.php");
 class User
 {
 	const TABLE_NAME = "users";
-	const ID = "id";
+	const ID = "user_id";
 	const NAME = "name";
 	const PASSWORD = "password";
 	const SALT = "salt";
@@ -49,8 +49,6 @@ class User
 				{
 					$this->id = $row[self::ID];
 					$this->name = $row[self::NAME];
-					$this->password = $row[self::PASSWORD];
-					$this->salt = $row[self::SALT];
 					$this->radius = $row[self::RADIUS];
 					$this->remainingPings = $row[self::REMAINING_PINGS];
 					$this->auth = $row[self::AUTH];
@@ -99,11 +97,17 @@ class User
 		$id = uniqid();
 		$salt = substr(md5(mt_rand(0, 1000000)), 0, 20);
 		$hashedPwd = hash("sha256", $pwd.$salt);
-		$pings = self::DEFAULT_PINGS;
 		$auth = md5(time() . $id . $name);
 
-		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ."(id,name,password,salt,remaining_pings, auth) VALUES(:id,:name,:pwd,:salt,:rempings,:auth)");
-		$stmt->execute(array(':id' => $id, ':name' => $name, ':pwd' => $hashedPwd, ':salt' => $salt, ':rempings' => $pings, ':auth' => $auth));
+		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ." (user_id,name,password,salt,remaining_pings, auth) VALUES (:uid,:uname,:pwd,:salt,:rempings,:authtoken)");
+		$stmt->execute(array(
+				':uid' => $id, 
+				':uname' => $name, 
+				':pwd' => $hashedPwd, 
+				':salt' => $salt, 
+				':rempings' => self::DEFAULT_PINGS, 
+				':authtoken' => $auth
+				));
 		$affectedRows = $stmt->rowCount();
 
 		if($affectedRows == 0)
@@ -113,6 +117,30 @@ class User
 			return $this->login($name, $pwd);
 		}
 	}
+
+	public function votedFor($pingId)
+	{
+		$stmt = $this->db->prepare("SELECT * FROM votes WHERE user_id =? AND ping_id =?");
+		$stmt->bindValue(1, $this->id, PDO::PARAM_STR);
+		$stmt->bindValue(2, $pingId, PDO::PARAM_STR);
+		$stmt->execute();
+		if($stmt->rowCount() == 0)
+		{
+			return false;
+		}
+		else
+		{
+			$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			foreach ($rows as $row)
+			{
+				return $row["vote"];
+			}
+		}
+	}
+
+	public function getId() { return $this->id; }
+	public function getName() { return $this->name; }
+	public function getAuth() { return $this->auth; }
 
 	public function getRadius() { return $this->radius; }
 	public function setRadius($rad)
