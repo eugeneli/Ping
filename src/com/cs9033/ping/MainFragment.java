@@ -4,9 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.cs9033.ping.models.Ping;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -39,6 +41,7 @@ public class MainFragment extends Fragment {
 	}
 
 	private double currentZoom = -1;
+	private LatLng userLoc;
 	private double userRadius = 1;
 	private Circle myCircle;
 	private Map<String, MapPing> mapPings;
@@ -57,6 +60,12 @@ public class MainFragment extends Fragment {
 	}
 	
 	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putParcelable("myloc", getMap().getCameraPosition());
+	}
+	
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.fragment_map, container, false);
 	}
@@ -64,6 +73,12 @@ public class MainFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		final CameraPosition pos;
+		if (savedInstanceState != null && savedInstanceState.containsKey("myloc"))
+			pos = (CameraPosition) savedInstanceState.get("myloc");
+		else
+			pos = null;
+		
 		getChildFragmentManager()
 			.beginTransaction()
 			.add(R.id.map, SupportMapFragment.newInstance(), "Map")
@@ -75,15 +90,22 @@ public class MainFragment extends Fragment {
 			@Override
 			public void run() {
 				final GoogleMap map = getMap();
+				if (pos != null)
+					map.moveCamera(CameraUpdateFactory.newCameraPosition(pos));
+				
 				currentZoom = map.getCameraPosition().zoom;
 				userRadius = 5 * Math.pow(2, map.getMaxZoomLevel() - currentZoom);
 				myCircle = map.addCircle(new CircleOptions()
-					.center(new LatLng(0, 0))
+					.center(userLoc != null ? userLoc : new LatLng(0, 0))
 					.radius(userRadius)
 					.fillColor(getResources().getColor(R.color.see_thru_lighter_blue))
 					.strokeColor(Color.GRAY)
 					.strokeWidth(2.0f));
-				map.getUiSettings().setZoomControlsEnabled(false);
+				UiSettings settings = map.getUiSettings();
+				settings.setCompassEnabled(true);
+				settings.setMyLocationButtonEnabled(true);
+				settings.setZoomControlsEnabled(false);
+				map.setMyLocationEnabled(true);
 				map.setOnCameraChangeListener(new OnCameraChangeListener() {
 					@Override
 					public void onCameraChange(CameraPosition pos) {
@@ -102,13 +124,13 @@ public class MainFragment extends Fragment {
 		((Button) getView().findViewById(R.id.login)).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				((MainActivity) getActivity()).changeViews(LoginFragment.TAG);
+				((MainActivity) getActivity()).changeViews(LoginFragment.TAG, null);
 			}
 		});
 		((Button) getView().findViewById(R.id.ping_create)).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				((MainActivity) getActivity()).changeViews(CreatePingFragment.TAG);
+				((MainActivity) getActivity()).changeViews(CreatePingFragment.TAG, null);
 			}
 		});
 	}
@@ -118,7 +140,11 @@ public class MainFragment extends Fragment {
 	}
 	
 	public void updateLocation(LatLng location) {
-		myCircle.setCenter(location);
+		if (userLoc == null)
+			getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+		userLoc = location;
+		if (myCircle != null)
+			myCircle.setCenter(userLoc);
 	}
 	
 	public void addOrUpdatePing(Ping ping) {

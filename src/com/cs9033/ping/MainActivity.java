@@ -1,5 +1,7 @@
 package com.cs9033.ping;
 
+import java.util.Stack;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -13,18 +15,20 @@ import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.Fragment.SavedState;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
 public class MainActivity extends FragmentActivity implements OnFragmentLoadedListener  {
-	private static final String lastFragTag = "LAST_FRAGMENT";
-	private String lastFrag;
+	private static final String fragClasses = "FRAGMENT_CLASSES";
+	private static final String fragStates = "FRAGMENT_STATES";
+	
+	private Stack<String> fragmentClasses = new Stack<String>();
+	private Stack<Fragment.SavedState> fragmentStates = new Stack<Fragment.SavedState>();
 	private LocationClient lc;
 	private int FIX_SHIT = 9001;
 	
@@ -65,8 +69,19 @@ public class MainActivity extends FragmentActivity implements OnFragmentLoadedLi
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		String lastFrag = (savedInstanceState != null ? savedInstanceState.getString(lastFragTag) : null);
-		changeViews(lastFrag != null ? lastFrag : MainFragment.TAG);
+		if (savedInstanceState != null) {
+			String[] classes = savedInstanceState.getStringArray(fragClasses);
+			Fragment.SavedState[] states = (SavedState[]) savedInstanceState.getParcelableArray(fragStates);
+			for (int i = 0; i < classes.length && i < states.length; ++i) {
+				fragmentClasses.push(classes[i]);
+				fragmentStates.push(states[i]);
+			}
+		}
+		
+		if (fragmentClasses.empty() || fragmentStates.empty())
+			loadView(MainFragment.TAG, null);
+		else
+			loadView(fragmentClasses.pop(), fragmentStates.pop());
 		
 		lc = new LocationClient(this, conn, fail);
 	}	
@@ -94,52 +109,62 @@ public class MainActivity extends FragmentActivity implements OnFragmentLoadedLi
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString(lastFragTag, lastFrag);
+		FragmentManager fm = getSupportFragmentManager();
+		Fragment frag = fm.findFragmentById(R.id.frame);
+		if (frag == null)
+			return;
+		fragmentClasses.push(frag.getTag());
+		fragmentStates.push(fm.saveFragmentInstanceState(frag));
+		outState.putStringArray(fragClasses, fragmentClasses.toArray(new String[fragmentClasses.size()]));
+		outState.putParcelableArray(fragStates, fragmentStates.toArray(new Fragment.SavedState[fragmentStates.size()]));
 	}
 
 	@Override
 	public void onBackPressed() {
-		FragmentManager manager = getSupportFragmentManager();
-		if (manager.getBackStackEntryCount() < 2)
+		if (fragmentClasses.empty() || fragmentStates.empty())
 			finish();
 		else
-			super.onBackPressed();
+			loadView(fragmentClasses.pop(), fragmentStates.pop());
 	}
 
-	private Fragment getFragment(String tag) {
-		Fragment frag = getSupportFragmentManager().findFragmentByTag(tag);
-		if (frag != null) return frag;
-		if (tag == MainFragment.TAG) return new MainFragment();
-		if (tag == LoginFragment.TAG) return new LoginFragment();
-		if (tag == CreatePingFragment.TAG) return new CreatePingFragment();
-		return null;
+	public void changeViews(String tag, Fragment.SavedState state) {
+		saveCurrentState();
+		loadView(tag, state);
+	}
+
+	private void saveCurrentState() {
+		FragmentManager fm = getSupportFragmentManager();
+		Fragment oldF = fm.findFragmentById(R.id.frame);
+		if (oldF != null) {
+			fragmentClasses.push(oldF.getTag());
+			fragmentStates.push(fm.saveFragmentInstanceState(oldF));
+		}
 	}
 	
-	public void changeViews(final String tag) {
-		FragmentManager fm = getSupportFragmentManager();
-		Fragment newFrag = getFragment(tag);
-		final Fragment newF = newFrag;
+	private void loadView(String tag, Fragment.SavedState state) {
+		Fragment newF = getFragment(tag, state);
 
-		Fragment oldF = fm.findFragmentByTag(lastFrag);
-		if (oldF != null)
-			oldF.setUserVisibleHint(false);
-		
 		((ProgressBar) findViewById(R.id.loading)).setVisibility(View.VISIBLE);
 		((FrameLayout) findViewById(R.id.frame)).setVisibility(View.INVISIBLE);
-		
-		new Handler().post(new Runnable() {
-			@Override
-			public void run() {
-				FragmentTransaction ft = getSupportFragmentManager()
-						.beginTransaction()
-						.replace(R.id.frame, newF, tag);
-					ft.addToBackStack(null).commit();				
-			}
-		});
-		
-		lastFrag = tag;
+
+		FragmentManager fm = getSupportFragmentManager();
+		fm.beginTransaction()
+			.replace(R.id.frame, newF, tag)
+			.commit();				
 	}
 
+	private Fragment getFragment(String tag, Fragment.SavedState state) {
+		Fragment frag = getSupportFragmentManager().findFragmentByTag(tag);
+		if (frag != null) return frag;
+		if (tag == MainFragment.TAG) frag = new MainFragment();
+		if (tag == LoginFragment.TAG) frag = new LoginFragment();
+		if (tag == CreatePingFragment.TAG) frag = new CreatePingFragment();
+		if (frag != null) {
+			frag.setInitialSavedState(state);
+		}
+		return frag;
+	}
+	
 	@Override
 	public void onFragmentLoaded(Fragment fragment) {
 		((ProgressBar) findViewById(R.id.loading)).setVisibility(View.INVISIBLE);
