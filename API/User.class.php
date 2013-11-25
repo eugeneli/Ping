@@ -94,27 +94,31 @@ class User
 
 	public function register($name, $pwd)
 	{
-		$id = uniqid();
-		$salt = substr(md5(mt_rand(0, 1000000)), 0, 20);
-		$hashedPwd = hash("sha256", $pwd.$salt);
-		$auth = md5(time() . $id . $name);
-
-		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ." (user_id,name,password,salt,remaining_pings, auth) VALUES (:uid,:uname,:pwd,:salt,:rempings,:authtoken)");
-		$stmt->execute(array(
-				':uid' => $id, 
-				':uname' => $name, 
-				':pwd' => $hashedPwd, 
-				':salt' => $salt, 
-				':rempings' => self::DEFAULT_PINGS, 
-				':authtoken' => $auth
-				));
-		$affectedRows = $stmt->rowCount();
-
-		if($affectedRows == 0)
-			return false;
-		else
+		$countStmt = $db->query("SELECT * FROM ". self::TABLE_NAME);
+		if($countStmt->rowCount() == 0)
 		{
-			return $this->login($name, $pwd);
+			$id = uniqid();
+			$salt = substr(md5(mt_rand(0, 1000000)), 0, 20);
+			$hashedPwd = hash("sha256", $pwd.$salt);
+			$auth = md5(time() . $id . $name);
+
+			$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ." (user_id,name,password,salt,remaining_pings, auth) VALUES (:uid,:uname,:pwd,:salt,:rempings,:authtoken)");
+			$stmt->execute(array(
+					':uid' => $id, 
+					':uname' => $name, 
+					':pwd' => $hashedPwd, 
+					':salt' => $salt, 
+					':rempings' => self::DEFAULT_PINGS, 
+					':authtoken' => $auth
+					));
+			$affectedRows = $stmt->rowCount();
+
+			if($affectedRows == 0)
+				return false;
+			else
+			{
+				return $this->login($name, $pwd);
+			}
 		}
 	}
 
@@ -164,6 +168,19 @@ class User
 		if($stmt->rowCount() == 0)
 			return false;
 		else return true;
+	}
+
+	public function asJSON()
+	{
+		$data = array(
+			self::ID => $this->id,
+			self::NAME => $this->name;
+			self::RADIUS => $this->radius;
+			self::REMAINING_PINGS => $this->remainingPings,
+			self::AUTH => $this->auth
+			);
+
+		return json_encode($data);
 	}
 
 }

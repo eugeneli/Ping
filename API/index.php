@@ -88,16 +88,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 			$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 
 		echo json_encode($response);
-
-		/*$id = uniqid();
-		$creatorId = $data[CREATOR_ID];
-		$createDate = $data[CREATE_DATE];
-		$lat = $data[LAT];
-		$lon = $data[LON];
-		$hasImage = $data[HAS_IMG];
-		$rating = DEFAULT_RATING;
-		$message = $data[MESSAGE];
-		$image = $data[IMAGE]; */
 	}
 	else if($_POST[COMMAND] == POST_LOGIN_USER)
 	{
@@ -111,12 +101,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
 		if($success)
 		{
+			$response = $user->asJSON();
 			$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
-			$response[User::ID] = $user->getId();
-			$response[User::AUTH] = $user->getAuth();
-			$response[User::NAME] = $user->getName();
-			$response[User::REMAINING_PINGS] = $user->getPings();
-			$response[User::RADIUS] = $user->getRadius();
 		}
 		else
 			$response[RESPONSE_CODE] = RESPONSE_FAILURE;
@@ -137,11 +123,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 			$pingId = $data[Ping::ID];
 			$voteValue = $data[Ping::VOTE_VALUE];
 
-			$ping = new Ping();
-			if($ping->getPingById($pingId))
+			if(!$user->votedFor($pingId)) //Prevent duplicate votes
 			{
-				if($ping->vote($userId, $voteValue)) //do vote
-					$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
+				$ping = new Ping();
+				if($ping->getPingById($pingId))
+				{
+					if($ping->vote($userId, $voteValue)) //do vote
+						$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
+					else
+						$response[RESPONSE_CODE] = RESPONSE_FAILURE;
+				}
 				else
 					$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 			}
@@ -150,6 +141,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		}
 		else
 			$response[RESPONSE_CODE] = RESPONSE_FAILURE;
+
+		echo json_encode($response);
 	}
 }
 else if($_SERVER["REQUEST_METHOD"] == "GET")
