@@ -39,7 +39,7 @@ $result = ob_get_clean();
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
 	$response = array();
-	if($_POST[COMMAND] == POST_CREATE_USER)
+	if($_POST[COMMAND] == POST_CREATE_USER) //Register a new user
 	{
 		$data = json_decode($_POST[JSON_DATA], true);
 
@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
 		echo json_encode($response);
 	}
-	else if($_POST[COMMAND] == POST_CREATE_PING)
+	else if($_POST[COMMAND] == POST_CREATE_PING) //Create a new ping
 	{
 		$data = json_decode($_POST[JSON_DATA]);
 		$userId = $data[User::ID];

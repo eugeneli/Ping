@@ -8,15 +8,15 @@ import com.cs9033.ping.util.SerializableBitmap;
 public class Ping
 {
 	//JSON constants
-	private static final String JSON_SERVER_ID = "ping_id";
-	private static final String JSON_CREATOR_ID = "creator_id";
-	private static final String JSON_CREATION_DATE = "create_date";
-	private static final String JSON_LAT = "latitude";
-	private static final String JSON_LON = "longitude";
-	private static final String JSON_HAS_IMAGE = "has_image";
-	private static final String JSON_RATING = "rating";
-	private static final String JSON_MESSAGE = "message";
-	private static final String JSON_IMAGE = "b64image";
+	public static final String JSON_SERVER_ID = "ping_id";
+	public static final String JSON_CREATOR_ID = "creator_id";
+	public static final String JSON_CREATION_DATE = "create_date";
+	public static final String JSON_LAT = "latitude";
+	public static final String JSON_LON = "longitude";
+	public static final String JSON_HAS_IMAGE = "has_image";
+	public static final String JSON_RATING = "rating";
+	public static final String JSON_MESSAGE = "message";
+	public static final String JSON_IMAGE = "b64image";
 	
 	//metadata
 	private String serverID; //UUID on server

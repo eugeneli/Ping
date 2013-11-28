@@ -15,6 +15,7 @@ class Ping
 	const B64IMAGE = "b64image";
 
 	const VOTE_VALUE = "vote_value";
+	const PING_DATA = "ping_data";
 
 	private $db;
 	private $id;
@@ -65,6 +66,8 @@ class Ping
 
 	public function createNewPing($data)
 	{
+		$pingData = $data[self::PING_DATA];
+		
 		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ." (ping_id, creator_id, create_date, latitude, longitude, has_image, rating, message, b64image) VALUES (:id,:creatorId,:createDate,:lat,:lon,:hasImg,:rating,:msg,:b64)");
 		$stmt->execute(array(
 				':id' => $data[self::ID], 
@@ -80,15 +83,15 @@ class Ping
 
 		if($affectedRows == 0)
 		{
-			$this->id = $data[self::ID];
-			$this->creatorId = $data[self::CREATOR_ID];
-			$this->createDate = $data[self::CREATE_DATE];
-			$this->lat = $data[self::LATITUDE];
-			$this->lon = $data[self::LONGITUDE];
-			$this->hasImage = $data[self::HAS_IMAGE];
-			$this->rating = $data[self::RATING];
-			$this->message = $data[self::MESSAGE];
-			$this->b64image = $data[self::B64IMAGE];
+			$this->id = $pingData[self::ID];
+			$this->creatorId = $pingData[self::CREATOR_ID];
+			$this->createDate = $pingData[self::CREATE_DATE];
+			$this->lat = $pingData[self::LATITUDE];
+			$this->lon = $pingData[self::LONGITUDE];
+			$this->hasImage = $pingData[self::HAS_IMAGE];
+			$this->rating = $pingData[self::RATING];
+			$this->message = $pingData[self::MESSAGE];
+			$this->b64image = $pingData[self::B64IMAGE];
 			return true;
 		}
 		else

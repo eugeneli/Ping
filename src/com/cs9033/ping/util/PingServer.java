@@ -20,6 +20,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.cs9033.ping.models.Ping;
 import com.cs9033.ping.models.User;
 
 import android.os.AsyncTask;
@@ -54,11 +55,11 @@ public class PingServer
 		new CreateUserTask().execute(username, password);
 	}
 	
-	
-	public void startGetTripStatusTask(long tripID)
+	public void startCreatePingTask(Object user, Object ping)
 	{
-		new GetTripStatusTask().execute(tripID);
+		new CreatePingTask().execute(user, ping);
 	}
+	
 	
 	public void startUpdateLocationTask(double latitude, double longitude)
 	{
@@ -138,44 +139,61 @@ public class PingServer
         }
     }
 	
-	/*Responses Example: {"distance_left": [20.399999999999999, 6.7000000000000002], "time_left": [1920, 900], "people": ["Joe Smith", "John Doe"]}
-	  The response contains three lists. "people" contains the list of people being tracked for that trip. "distance_left" contains the list of miles left in the order of the "people" list. 
-	  "time_left" is similar, but reports the number of seconds until arrival at the trip's destination.
-	*/
-	private static class GetTripStatusTask extends AsyncTask<Long, Void, String>
+	private static class CreatePingTask extends AsyncTask<Object, Void, String>
 	{
-		private final String TASK_TAG = "GetTripStatus";
-		private String result = "";
+		private final String TASK_TAG = "CreatePing";
+		private String responseString = "";
 		
-		private final String JSON_TRIP_STATUS_COMMAND = "TRIP_STATUS";
-		private final String JSON_TRIP_ID = "trip_id";
+		private final String JSON_CREATE_PING_COMMAND = "TRIP_STATUS";
+		private final String JSON_PING_DATA = "ping_data";
 
         @Override
-        protected String doInBackground(Long... params)
+        protected String doInBackground(Object... params)
         {
+        	//lol java
+        	User user = (User)params[0];
+        	Ping ping = (Ping)params[1];
+        	
         	// Create a new HttpClient and Post Header
             HttpClient httpClient = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(SERVER_URL);
-            httpPost.setHeader("Accept", "application/json");
-            httpPost.setHeader("Content-type", "application/json");
             
-            JSONObject getTripStatusJSON = new JSONObject();
+            //POST data. Add the command first.
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, JSON_CREATE_PING_COMMAND));
+            
+            //Now build JSON object to be serialized and sent as 2nd POST parameter.
+            JSONObject createPingJSON = new JSONObject();
             
 			try
 			{
 				//Build json object
-				getTripStatusJSON.put(JSON_COMMAND, JSON_TRIP_STATUS_COMMAND);
-				getTripStatusJSON.put(JSON_TRIP_ID, params[0]);
+				createPingJSON.put(User.JSON_USER_ID, user.getUserID());
+				createPingJSON.put(User.JSON_AUTH_TOKEN, user.getAuthToken());
+				
+				createPingJSON.put(JSON_PING_DATA,  ping.toJSON().toString());
+				
+				/*createPingJSON.put(Ping.JSON_CREATOR_ID, ping.getCreatorID());
+				createPingJSON.put(Ping.JSON_CREATION_DATE, ping.getCreationDate());
+				createPingJSON.put(Ping.JSON_LAT, ping.getCoordinates()[0]);
+				createPingJSON.put(Ping.JSON_LON, ping.getCoordinates()[1]);
+				createPingJSON.put(Ping.JSON_HAS_IMAGE, ping.hasImage());
+				createPingJSON.put(Ping.JSON_RATING, ping.getRating());
+				createPingJSON.put(Ping.JSON_MESSAGE, ping.getMessage());
+				createPingJSON.put(Ping.JSON_IMAGE, ping.getImage().getBase64());*/
 					
-				//Create string from it and post to server
-				StringEntity se = new StringEntity(getTripStatusJSON.toString());
-	            httpPost.setEntity(se);
+				//Add to POST data
+				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, createPingJSON.toString()));
+				
+				//POST to server
+	            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 	            HttpResponse response = httpClient.execute(httpPost);
+	            
 	            InputStream is = response.getEntity().getContent();
 	            
-	            result = convertStreamToString(is);
-	            
-	            return result;
+	            responseString = convertStreamToString(is);
+
+	            return responseString;
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
@@ -186,18 +204,22 @@ public class PingServer
 				e.printStackTrace();
 			}
             
-			return result;
+			return responseString;
         }
         
         @Override
         protected void onPostExecute(String result)
         {
         	Log.i(TAG+": "+TASK_TAG, result);
-        	Message msg = new Message();
-        	Bundle bundle = new Bundle();
-        	bundle.putString(ASYNC_RESULT, result);
-        	msg.setData(bundle);
-        	completionHandler.dispatchMessage(msg);
+        	
+        	if(completionHandler != null)
+        	{
+        		Message msg = new Message();
+            	Bundle bundle = new Bundle();
+            	bundle.putString(ASYNC_RESULT, result);
+            	msg.setData(bundle);
+            	completionHandler.dispatchMessage(msg);
+        	}
         }
     }
 	
