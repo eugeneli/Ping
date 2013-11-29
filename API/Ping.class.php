@@ -28,7 +28,7 @@ class Ping
 	private $message;
 	private $b64Image;
 
-	public function __construct($id)
+	public function __construct()
 	{
 		global $PDOdb;
 		$this->db = $PDOdb;
@@ -66,15 +66,13 @@ class Ping
 
 	public function createNewPing($data)
 	{
-		$pingData = $data[self::PING_DATA];
-		
 		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ." (ping_id, creator_id, create_date, latitude, longitude, has_image, rating, message, b64image) VALUES (:id,:creatorId,:createDate,:lat,:lon,:hasImg,:rating,:msg,:b64)");
 		$stmt->execute(array(
 				':id' => $data[self::ID], 
 				':creatorId' => $data[self::CREATOR_ID], 
 				':createDate' => $data[self::CREATE_DATE], 
-				':lat' => $date[self::LATITUDE], 
-				':lon' => $date[self::LONGITUDE], 
+				':lat' => $data[self::LATITUDE], 
+				':lon' => $data[self::LONGITUDE], 
 				':hasImg' => $data[self::HAS_IMAGE], 
 				':rating' => 0, 
 				':msg' => $data[self::MESSAGE], 
@@ -83,15 +81,15 @@ class Ping
 
 		if($affectedRows == 0)
 		{
-			$this->id = $pingData[self::ID];
-			$this->creatorId = $pingData[self::CREATOR_ID];
-			$this->createDate = $pingData[self::CREATE_DATE];
-			$this->lat = $pingData[self::LATITUDE];
-			$this->lon = $pingData[self::LONGITUDE];
-			$this->hasImage = $pingData[self::HAS_IMAGE];
-			$this->rating = $pingData[self::RATING];
-			$this->message = $pingData[self::MESSAGE];
-			$this->b64image = $pingData[self::B64IMAGE];
+			$this->id = $data[self::ID];
+			$this->creatorId = $data[self::CREATOR_ID];
+			$this->createDate = $data[self::CREATE_DATE];
+			$this->lat = $data[self::LATITUDE];
+			$this->lon = $data[self::LONGITUDE];
+			$this->hasImage = $data[self::HAS_IMAGE];
+			$this->rating = $data[self::RATING];
+			$this->message = $data[self::MESSAGE];
+			$this->b64image = $data[self::B64IMAGE];
 			return true;
 		}
 		else
@@ -137,6 +135,23 @@ class Ping
 			);
 
 		return json_encode($data);
+	}
+
+	public function asArray()
+	{
+		$data = array(
+			self::ID => $this->id,
+			self::CREATOR_ID => $this->creatorId,
+			self::CREATE_DATE => $this->createDate,
+			self::LATITUDE => $this->lat,
+			self::LONGITUDE => $this->lon,
+			self::HAS_IMAGE => $this->hasImage,
+			self::RATING => $this->rating,
+			self::MESSAGE => $this->message,
+			self::B64IMAGE => $this->b64image
+			);
+
+		return $data;
 	}
 }
 ?>

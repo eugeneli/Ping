@@ -17,6 +17,7 @@ require_once("User.class.php");
 require_once("Ping.class.php");
 
 define("JSON_DATA", "json_data");
+define("JSON_PING_DATA", "ping_data");
 define("COMMAND", "command");
 define("RESPONSE_CODE", "response_code");
 define("RESPONSE_FAILURE", 0);
@@ -26,7 +27,7 @@ define("POST_CREATE_USER", "CREATE_USER");
 define("POST_CREATE_PING", "CREATE_PING");
 define("POST_LOGIN_USER", "LOGIN_USER");
 define("POST_VOTE_PING", "VOTE_PING");
-define("GET_USER_INFO", "GET_USER_INFO");
+define("GET_PINGS", "GET_PINGS");
 
 /*$File = "vars.txt"; 
  $Handle = fopen($File, 'w');
@@ -35,10 +36,9 @@ var_dump($_POST);
 $result = ob_get_clean();
  fwrite($Handle, $result); 
  fclose($Handle); */
-
+$response = array();
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-	$response = array();
 	if($_POST[COMMAND] == POST_CREATE_USER) //Register a new user
 	{
 		$data = json_decode($_POST[JSON_DATA], true);
@@ -68,7 +68,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	}
 	else if($_POST[COMMAND] == POST_CREATE_PING) //Create a new ping
 	{
-		$data = json_decode($_POST[JSON_DATA]);
+		$data = json_decode($_POST[JSON_DATA], true);
+		$pingData = $data[JSON_PING_DATA];
 		$userId = $data[User::ID];
 		$authToken = $data[User::AUTH];
 
@@ -77,14 +78,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
 		if($authed) //User authed! Now try making a new ping
 		{
-			$data[Ping::ID] = uniqid();
+			$pingData[Ping::ID] = uniqid();
 
 			$ping = new Ping();
-			$success = $ping->createNewPing($data);
+			$success = $ping->createNewPing($pingData);
 
 			if($success)
 			{
-				$response = json_decode($ping->asJSON());
+				$response = $ping->asArray();
 				$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
 			}
 			else
@@ -97,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	}
 	else if($_POST[COMMAND] == POST_LOGIN_USER)
 	{
-		$data = json_decode($_POST[JSON_DATA]);
+		$data = json_decode($_POST[JSON_DATA], true);
 
 		$name = $data[User::NAME];
 		$pwd = $data[User::PASSWORD];
@@ -107,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
 		if($success)
 		{
-			$response = $user->asJSON();
+			$response = $user->asArray();
 			$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
 		}
 		else
@@ -117,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	}
 	else if($_POST[COMMAND] == POST_VOTE_PING)
 	{
-		$data = json_decode($_POST[JSON_DATA]);
+		$data = json_decode($_POST[JSON_DATA], true);
 		$userId = $data[User::ID];
 		$authToken = $data[User::AUTH];
 
@@ -153,6 +154,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 }
 else if($_SERVER["REQUEST_METHOD"] == "GET")
 {
+	if($_GET[COMMAND] == GET_PINGS) //Get pings within given radius and location
+	{
+		$data = json_decode($_POST[JSON_DATA], true);
+		$userLat = $data[Ping::LATITUDE];
+		$userLon = $data[Ping::LONGITUDE];
+		$radius = $data[User::RADIUS];
 
+		/*$userLat = $_GET['lat'];
+		$userLon = $_GET['lon'];
+		$radius = $_GET['rad'];*/
+
+		$query = "SELECT ". Ping::ID .", (3959 * acos( cos( radians(". $userLat .") ) * cos( radians(". Ping::LATITUDE .") ) * cos( radians( ". Ping::LONGITUDE ." ) - radians(". $userLon .") ) + sin( radians(". $userLat .") ) * sin( radians(". Ping::LATITUDE .") ) ) ) AS distance 
+					FROM ". Ping::TABLE_NAME ." HAVING distance < ". $radius ." ORDER BY distance LIMIT 0 , 20;";
+
+		$stmt = $PDOdb->prepare($query);
+		$stmt->execute();
+		if($stmt->rowCount() == 0)
+		{
+			$response[RESPONSE_CODE] = RESPONSE_FAILURE;
+		}
+		else
+		{
+			$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			foreach ($rows as $row)
+			{
+				$ping = new Ping();
+				$ping->getPingById($row[Ping::ID]);
+
+				array_push($response, $ping->asArray());
+			}
+		}
+
+		echo json_encode($response);
+	}
 }
 ?>
