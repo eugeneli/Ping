@@ -3,7 +3,10 @@ package com.cs9033.ping.models;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.text.format.Time;
+
 import com.cs9033.ping.util.SerializableBitmap;
+import com.google.android.gms.maps.model.LatLng;
 
 public class Ping
 {
@@ -30,7 +33,24 @@ public class Ping
 	private String message;
 	private SerializableBitmap image;
 	
-	public Ping() {} //Write other constructors as needed later on
+	public Ping(User creator, LatLng location, String message, SerializableBitmap image)
+	{
+		creatorID = creator.getUserID();
+		Time currentTime = new Time();
+		currentTime.setToNow();
+		creationDate = currentTime.toMillis(false);
+		coordinates = new double[] {location.latitude, location.longitude};
+		hasImage = (image != null);
+		rating = 1;
+		
+		this.message = message;
+		this.image = image;
+	}
+	
+	public Ping(JSONObject json) throws JSONException
+	{
+		fromJSON(json);
+	}
 	
 	//Setters/getters
 	public void setServerID(String id) { serverID = id; }
@@ -76,7 +96,10 @@ public class Ping
 		json.put(JSON_HAS_IMAGE, hasImage);
 		json.put(JSON_RATING, rating);
 		json.put(JSON_MESSAGE, message);
-		json.put(JSON_IMAGE, image.getBase64());
+		if (hasImage)
+			json.put(JSON_IMAGE, image.getBase64());
+		else
+			json.put(JSON_IMAGE, JSONObject.NULL);
 
 		return json;
 	}
@@ -93,6 +116,7 @@ public class Ping
 		hasImage = json.getBoolean(JSON_HAS_IMAGE);
 		rating = json.getInt(JSON_RATING);
 		message = json.getString(JSON_MESSAGE);
-		image = new SerializableBitmap(json.getString(JSON_IMAGE));
+		if (hasImage)
+			image = new SerializableBitmap(json.getString(JSON_IMAGE));
 	}
 }

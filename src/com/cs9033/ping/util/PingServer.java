@@ -53,7 +53,7 @@ public class PingServer
 		new LoginTask(onResponse).execute(username, password);
 	}
 	
-	public void startCreatePingTask(Object user, Object ping, OnResponseListener onResponse)
+	public void startCreatePingTask(User user, Ping ping, OnResponseListener onResponse)
 	{
 		new CreatePingTask(onResponse).execute(user, ping);
 	}
@@ -140,7 +140,7 @@ public class PingServer
 	
 	private static class LoginTask extends AsyncTask<String, Void, String>
 	{
-		private final String TASK_TAG = "CreateUser";
+		private final String TASK_TAG = "Login";
 		private String responseString = "";
 		private OnResponseListener onResponse;
 		
@@ -218,7 +218,7 @@ public class PingServer
 		private String responseString = "";
 		private OnResponseListener onResponse;
 		
-		private final String JSON_CREATE_PING_COMMAND = "TRIP_STATUS";
+		private final String JSON_CREATE_PING_COMMAND = "CREATE_PING";
 		private final String JSON_PING_DATA = "ping_data";
 		
 		public CreatePingTask(OnResponseListener onResponse) {

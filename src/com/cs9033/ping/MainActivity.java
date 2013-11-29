@@ -35,6 +35,9 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	private LocationClient lc;
 	private int FIX_SHIT = 9001;
 	
+	private User currentUser;
+	private LatLng currentLocation;
+	
 	private ConnectionCallbacks conn = new ConnectionCallbacks() {
 		@Override
 		public void onConnected(Bundle arg0) {
@@ -61,9 +64,10 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	private LocationListener ll = new LocationListener() {
 		@Override
 		public void onLocationChanged(Location loc) {
+			currentLocation = new LatLng(loc.getLatitude(), loc.getLongitude());
 			MainFragment fragment = (MainFragment) getSupportFragmentManager().findFragmentByTag(MainFragment.TAG);
 			if (fragment != null)
-				fragment.updateLocation(new LatLng(loc.getLatitude(), loc.getLongitude()));
+				fragment.updateLocation(currentLocation);
 		}
 	};
 
@@ -189,16 +193,16 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		fragment.setUserVisibleHint(true);
 	}
 
-	
-	private User currentUser;
 	@Override
 	public User getCurrentUser() {
 		return currentUser;
 	}
-
 	@Override
 	public void setCurrentUser(User user) {
 		currentUser = user;
 	}
-	
+	@Override
+	public LatLng getCurrentLocation() {
+		return currentLocation;
+	}
 }
