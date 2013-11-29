@@ -47,13 +47,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		$pwd = $data[User::PASSWORD];
 
 		$user = new User();
-		$success = $user->register($name, $pwd);
+		$registerSuccess = $user->register($name, $pwd);
 
-		if($success)
+		if($registerSuccess)
 		{
-			$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
-			$response[User::ID] = $user->getId();
-			$response[User::AUTH] = $user->getAuth();
+			$loginSuccess = $user->login($name, $pwd);
+
+			if($loginSuccess)
+			{
+				$response = $user->asArray();
+				$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
+			}
+			else
+				$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 		}
 		else
 			$response[RESPONSE_CODE] = RESPONSE_FAILURE;

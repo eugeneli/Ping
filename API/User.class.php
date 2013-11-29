@@ -94,7 +94,7 @@ class User
 
 	public function register($name, $pwd)
 	{
-		$countStmt = $db->query("SELECT * FROM ". self::TABLE_NAME);
+		$countStmt = $this->db->query("SELECT * FROM ". self::TABLE_NAME ." WHERE ". self::NAME ." = '". $name ."'");
 		if($countStmt->rowCount() == 0)
 		{
 			$id = uniqid();
@@ -174,14 +174,27 @@ class User
 	{
 		$data = array(
 			self::ID => $this->id,
-			self::NAME => $this->name;
-			self::RADIUS => $this->radius;
+			self::NAME => $this->name,
+			self::RADIUS => $this->radius,
 			self::REMAINING_PINGS => $this->remainingPings,
 			self::AUTH => $this->auth
 			);
 
 		return json_encode($data);
 	}
+
+	public function asArray()
+	{
+		$data = array(
+			self::ID => $this->id,
+			self::NAME => $this->name,
+			self::RADIUS => $this->radius,
+			self::REMAINING_PINGS => $this->remainingPings,
+			self::AUTH => $this->auth
+			);
+
+		return $data;
+	}	
 
 }
 ?>
