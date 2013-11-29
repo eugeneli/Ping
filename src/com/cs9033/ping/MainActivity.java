@@ -96,6 +96,13 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	}
 	
 	@Override
+	protected void onRestart() {
+		super.onRestart();
+		fragmentClasses.pop();
+		fragmentStates.pop();
+	}
+	
+	@Override
 	protected void onStop() {
 		if (lc.isConnected())
 			lc.removeLocationUpdates(ll);
