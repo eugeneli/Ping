@@ -68,7 +68,10 @@ public class MainFragment extends Fragment {
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.fragment_map, container, false);
+		View view = inflater.inflate(R.layout.fragment_map, container, false);
+		if (activity.getCurrentUser() == null)
+			view.findViewById(R.id.ping_create).setVisibility(View.INVISIBLE);
+		return view;
 	}
 	
 	@Override
