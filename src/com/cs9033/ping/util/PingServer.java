@@ -24,15 +24,12 @@ import com.cs9033.ping.models.Ping;
 import com.cs9033.ping.models.User;
 
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 public class PingServer
 {
 	private final static String TAG = "Server";
-	private static String SERVER_URL;
+	private final static String SERVER_URL = "http://polychan.org/ping/";
 	
 	private final static String JSON_COMMAND = "command";
 	private final static String JSON_DATA = "json_data";
@@ -40,24 +37,25 @@ public class PingServer
 	public final static String ASYNC_RESULT = "result";
 	public final static String ASYNC_RESPONSE_CODE = "response_code";
 	
-	private static Handler completionHandler;
-	
-	public PingServer(String url, Handler comHandler)
-	{
-		SERVER_URL = url;
-		completionHandler = comHandler;
+	public static interface OnResponseListener {
+		public void onResponse(JSONObject response) throws JSONException;
 	}
 	
-	public PingServer(String url) { SERVER_URL = url; }
+	public PingServer() {}
 	
-	public void startCreateUserTask(String username, String password)
+	public void startCreateUserTask(String username, String password, OnResponseListener onResponse)
 	{
-		new CreateUserTask().execute(username, password);
+		new CreateUserTask(onResponse).execute(username, password);
 	}
 	
-	public void startCreatePingTask(Object user, Object ping)
+	public void startLoginTask(String username, String password, OnResponseListener onResponse)
 	{
-		new CreatePingTask().execute(user, ping);
+		new LoginTask(onResponse).execute(username, password);
+	}
+	
+	public void startCreatePingTask(Object user, Object ping, OnResponseListener onResponse)
+	{
+		new CreatePingTask(onResponse).execute(user, ping);
 	}
 	
 	
@@ -66,17 +64,17 @@ public class PingServer
 		new UpdateLocationTask().execute(latitude, longitude);
 	}
 	
-	/*
-	 * POST: ["command"]=> "CREATE_USER"
-			  ["json_data"]=> "{"password":"FDFSDFS","name":"DFDFDFDFDF"}"
-	   RECEIVE: {"response_code":1,"user_id":"528ef3c977d98","auth":"59eda95dc51cb4207728e8e8d681c104"}
-	 */
 	private static class CreateUserTask extends AsyncTask<String, Void, String>
 	{
 		private final String TASK_TAG = "CreateUser";
 		private String responseString = "";
+		private OnResponseListener onResponse;
 		
 		private final String JSON_CREATE_USER_COMMAND = "CREATE_USER";
+		
+		public CreateUserTask(OnResponseListener onResponse) {
+			this.onResponse = onResponse;
+		}
 		
         @Override
         protected String doInBackground(String... params)
@@ -128,24 +126,104 @@ public class PingServer
         {
         	Log.i(TAG+": "+TASK_TAG, result);
         	
-        	if(completionHandler != null)
+        	if(onResponse != null)
         	{
-        		Message msg = new Message();
-            	Bundle bundle = new Bundle();
-            	bundle.putString(ASYNC_RESULT, result);
-            	msg.setData(bundle);
-            	completionHandler.dispatchMessage(msg);
+        		try {
+        			onResponse.onResponse(new JSONObject(result));
+        		}
+        		catch (JSONException e) {
+        			e.printStackTrace();
+        		}
         	}
         }
     }
 	
+	private static class LoginTask extends AsyncTask<String, Void, String>
+	{
+		private final String TASK_TAG = "CreateUser";
+		private String responseString = "";
+		private OnResponseListener onResponse;
+		
+		private final String JSON_LOGIN_COMMAND = "LOGIN_USER";
+		
+		public LoginTask(OnResponseListener onResponse) {
+			this.onResponse = onResponse;
+		}
+		
+        @Override
+        protected String doInBackground(String... params)
+        {
+        	// Create a new HttpClient and Post Header
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(SERVER_URL);
+            
+            //POST data. Add the command first.
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, JSON_LOGIN_COMMAND));
+            
+            //Now build JSON object to be serialized and sent as 2nd POST parameter.
+            JSONObject loginJSON = new JSONObject();
+            
+			try
+			{
+				//Build json object
+				loginJSON.put(User.JSON_USER_NAME, params[0]);
+				loginJSON.put(User.JSON_USER_PWD, params[1]);
+					
+				//Add to POST data
+				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, loginJSON.toString()));
+				
+				//POST to server
+	            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+	            HttpResponse response = httpClient.execute(httpPost);
+	            
+	            InputStream is = response.getEntity().getContent();
+	            
+	            responseString = convertStreamToString(is);
+
+	            return responseString;
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+            
+			return responseString;
+        }
+        
+        @Override
+        protected void onPostExecute(String result)
+        {
+        	Log.i(TAG+": "+TASK_TAG, result);
+        	
+        	if(onResponse != null)
+        	{
+        		try {
+        			onResponse.onResponse(new JSONObject(result));
+        		}
+        		catch (JSONException e) {
+        			e.printStackTrace();
+        		}
+        	}
+        }
+    }
+
 	private static class CreatePingTask extends AsyncTask<Object, Void, String>
 	{
 		private final String TASK_TAG = "CreatePing";
 		private String responseString = "";
+		private OnResponseListener onResponse;
 		
 		private final String JSON_CREATE_PING_COMMAND = "TRIP_STATUS";
 		private final String JSON_PING_DATA = "ping_data";
+		
+		public CreatePingTask(OnResponseListener onResponse) {
+			this.onResponse = onResponse;
+		}
 
         @Override
         protected String doInBackground(Object... params)
@@ -210,15 +288,15 @@ public class PingServer
         @Override
         protected void onPostExecute(String result)
         {
-        	Log.i(TAG+": "+TASK_TAG, result);
+        	Log.i(TAG+": "+TASK_TAG, responseString);
         	
-        	if(completionHandler != null)
-        	{
-        		Message msg = new Message();
-            	Bundle bundle = new Bundle();
-            	bundle.putString(ASYNC_RESULT, result);
-            	msg.setData(bundle);
-            	completionHandler.dispatchMessage(msg);
+        	if (onResponse != null) {
+        		try {
+        			onResponse.onResponse(new JSONObject(responseString));
+        		}
+        		catch (JSONException e) {
+        			e.printStackTrace();
+        		}
         	}
         }
     }
