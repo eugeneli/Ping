@@ -2,6 +2,7 @@ package com.cs9033.ping;
 
 import java.util.Stack;
 
+import com.cs9033.ping.models.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -23,7 +24,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
-public class MainActivity extends FragmentActivity implements OnFragmentLoadedListener  {
+public class MainActivity extends FragmentActivity implements PingActivity  {
 	private static final String fragClasses = "FRAGMENT_CLASSES";
 	private static final String fragStates = "FRAGMENT_STATES";
 	
@@ -127,9 +128,9 @@ public class MainActivity extends FragmentActivity implements OnFragmentLoadedLi
 			loadView(fragmentClasses.pop(), fragmentStates.pop());
 	}
 
-	public void changeViews(String tag, Fragment.SavedState state) {
+	public void loadView(String tag) {
 		saveCurrentState();
-		loadView(tag, state);
+		loadView(tag, null);
 	}
 
 	private void saveCurrentState() {
@@ -170,6 +171,18 @@ public class MainActivity extends FragmentActivity implements OnFragmentLoadedLi
 		((ProgressBar) findViewById(R.id.loading)).setVisibility(View.INVISIBLE);
 		((FrameLayout) findViewById(R.id.frame)).setVisibility(View.VISIBLE);
 		fragment.setUserVisibleHint(true);
+	}
+
+	
+	private User currentUser;
+	@Override
+	public User getCurrentUser() {
+		return currentUser;
+	}
+
+	@Override
+	public void setCurrentUser(User user) {
+		currentUser = user;
 	}
 	
 }

@@ -9,13 +9,13 @@ import android.view.ViewGroup;
 
 public class CreatePingFragment extends Fragment {
 	public static final String TAG = "CreatePingFragment";
-	private OnFragmentLoadedListener listener;
+	private PingActivity activity;
 
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		if (activity instanceof OnFragmentLoadedListener)
-			listener = (OnFragmentLoadedListener)activity;
+		if (activity instanceof PingActivity)
+			this.activity = (PingActivity)activity;
 	}
 
 	@Override
@@ -26,6 +26,6 @@ public class CreatePingFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		listener.onFragmentLoaded(this);
+		activity.onFragmentLoaded(this);
 	}
 }

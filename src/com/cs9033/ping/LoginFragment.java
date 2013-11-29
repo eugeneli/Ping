@@ -11,13 +11,13 @@ import android.widget.TextView;
 
 public class LoginFragment extends Fragment {
 	public static final String TAG = "LoginFragment";
-	private OnFragmentLoadedListener listener;
+	private PingActivity activity;
 
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		if (activity instanceof OnFragmentLoadedListener)
-			listener = (OnFragmentLoadedListener)activity;
+		if (activity instanceof PingActivity)
+			this.activity = (PingActivity)activity;
 	}
 
 	@Override
@@ -30,6 +30,6 @@ public class LoginFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		listener.onFragmentLoaded(this);
+		activity.onFragmentLoaded(this);
 	}
 }

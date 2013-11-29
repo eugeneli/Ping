@@ -29,7 +29,7 @@ import android.widget.Button;
 
 public class MainFragment extends Fragment {
 	public static final String TAG = "MainFragment";
-	private OnFragmentLoadedListener listener;
+	private PingActivity activity;
 	
 	private class MapPing { //javaaaaaaa y u no tuple
 		public Marker marker;
@@ -50,8 +50,8 @@ public class MainFragment extends Fragment {
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		if (activity instanceof OnFragmentLoadedListener)
-			listener = (OnFragmentLoadedListener)activity;
+		if (activity instanceof PingActivity)
+			this.activity = (PingActivity)activity;
 	}
 	
 	@Override
@@ -119,21 +119,21 @@ public class MainFragment extends Fragment {
 						}
 					}
 				});
-				if (listener != null)
-					listener.onFragmentLoaded(self);
+				if (activity != null)
+					activity.onFragmentLoaded(self);
 			}
 		});
 				
 		((Button) getView().findViewById(R.id.login)).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				((MainActivity) getActivity()).changeViews(LoginFragment.TAG, null);
+				activity.loadView(LoginFragment.TAG);
 			}
 		});
 		((Button) getView().findViewById(R.id.ping_create)).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				((MainActivity) getActivity()).changeViews(CreatePingFragment.TAG, null);
+				activity.loadView(CreatePingFragment.TAG);
 			}
 		});
 	}
