@@ -12,6 +12,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.model.LatLng;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.location.Location;
@@ -21,6 +22,7 @@ import android.support.v4.app.Fragment.SavedState;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
@@ -144,10 +146,17 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	
 	private void loadView(String tag, Fragment.SavedState state) {
 		Fragment newF = getFragment(tag, state);
+		
+		FrameLayout frame = (FrameLayout) findViewById(R.id.frame);
+
+		//clear focus to hide the keyboard
+		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(frame.getWindowToken(), 0);
 
 		((ProgressBar) findViewById(R.id.loading)).setVisibility(View.VISIBLE);
-		((FrameLayout) findViewById(R.id.frame)).setVisibility(View.INVISIBLE);
-
+		frame.setVisibility(View.INVISIBLE);
+		
+		
 		FragmentManager fm = getSupportFragmentManager();
 		fm.beginTransaction()
 			.replace(R.id.frame, newF, tag)
