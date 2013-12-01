@@ -18,6 +18,7 @@ require_once("Ping.class.php");
 
 define("JSON_DATA", "json_data");
 define("JSON_PING_DATA", "ping_data");
+define("PINGS", "pings");
 define("COMMAND", "command");
 define("RESPONSE_CODE", "response_code");
 define("RESPONSE_FAILURE", 0);
@@ -28,6 +29,7 @@ define("POST_CREATE_PING", "CREATE_PING");
 define("POST_LOGIN_USER", "LOGIN_USER");
 define("POST_VOTE_PING", "VOTE_PING");
 define("GET_PINGS", "GET_PINGS");
+define("GET_PING_INFO", "GET_PING_INFO");
 
 /*$File = "vars.txt"; 
  $Handle = fopen($File, 'w');
@@ -156,7 +158,7 @@ else if($_SERVER["REQUEST_METHOD"] == "GET")
 {
 	if($_GET[COMMAND] == GET_PINGS) //Get pings within given radius and location
 	{
-		$data = json_decode($_POST[JSON_DATA], true);
+		$data = json_decode($_GET[JSON_DATA], true);
 		$userLat = $data[Ping::LATITUDE];
 		$userLon = $data[Ping::LONGITUDE];
 		$radius = $data[User::RADIUS];
@@ -176,15 +178,41 @@ else if($_SERVER["REQUEST_METHOD"] == "GET")
 		}
 		else
 		{
+			$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
+			$response[PINGS] = array();
+
 			$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			foreach ($rows as $row)
 			{
 				$ping = new Ping();
 				$ping->getPingById($row[Ping::ID]);
 
-				array_push($response, $ping->asArray());
+				//We don't want to send back large image data every time nearby pings are retrieved so remove it
+				$pingDataArray = $ping->asArray();
+				unset($pingDataArray[Ping::B64IMAGE]);
+
+				array_push($response[PINGS], $pingDataArray);
 			}
 		}
+		echo json_encode($response);
+	}
+	else if($_GET[COMMAND == GET_PING_INFO])
+	{
+		$data = json_decode($_GET[JSON_DATA], true);
+		$pingId = $data[Ping::ID];
+
+		$ping = new Ping();
+		$pingExists = $ping->getPingById($pingId);
+
+		if($pingExists)
+		{
+			$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
+			$response[PINGS] = array();
+			
+			array_push($response[PINGS], $ping->asArray());
+		}
+		else
+			$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 
 		echo json_encode($response);
 	}
