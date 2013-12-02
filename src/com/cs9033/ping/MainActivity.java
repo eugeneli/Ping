@@ -33,7 +33,7 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	private Stack<String> fragmentClasses = new Stack<String>();
 	private Stack<Fragment.SavedState> fragmentStates = new Stack<Fragment.SavedState>();
 	private LocationClient lc;
-	private int FIX_SHIT = 9001;
+	public static final int GOOGLE_MAPS_FIX_CONNECTION = 9001;
 	
 	private User currentUser;
 	private LatLng currentLocation;
@@ -53,7 +53,7 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		public void onConnectionFailed(ConnectionResult result) {
 			if (result.hasResolution())
 				try {
-					result.startResolutionForResult(MainActivity.this, FIX_SHIT);
+					result.startResolutionForResult(MainActivity.this, GOOGLE_MAPS_FIX_CONNECTION);
 				} catch (SendIntentException e) {
 					e.printStackTrace();
 				}
@@ -116,7 +116,8 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == Activity.RESULT_OK && requestCode == FIX_SHIT)
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == Activity.RESULT_OK && requestCode == GOOGLE_MAPS_FIX_CONNECTION)
 			lc.connect();
 	}
 

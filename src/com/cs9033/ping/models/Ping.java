@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import android.text.format.Time;
 
 import com.cs9033.ping.util.SerializableBitmap;
-import com.google.android.gms.maps.model.LatLng;
 
 public class Ping
 {
@@ -33,18 +32,17 @@ public class Ping
 	private String message;
 	private SerializableBitmap image;
 	
-	public Ping(User creator, LatLng location, String message, SerializableBitmap image)
+	public Ping(User creator)
 	{
 		creatorID = creator.getUserID();
 		Time currentTime = new Time();
 		currentTime.setToNow();
 		creationDate = currentTime.toMillis(false);
-		coordinates = new double[] {location.latitude, location.longitude};
-		hasImage = (image != null);
-		rating = 1;
-		
-		this.message = message;
-		this.image = image;
+		coordinates = new double[2];
+		hasImage = false;
+		rating = 0;
+		message = null;
+		image = null;
 	}
 	
 	public Ping(JSONObject json) throws JSONException
@@ -116,7 +114,10 @@ public class Ping
 		hasImage = json.getBoolean(JSON_HAS_IMAGE);
 		rating = json.getInt(JSON_RATING);
 		message = json.getString(JSON_MESSAGE);
-		if (hasImage)
+		String imageStr = json.getString(JSON_IMAGE);
+		if (hasImage && imageStr != null)
 			image = new SerializableBitmap(json.getString(JSON_IMAGE));
+		else
+			image = null;
 	}
 }
