@@ -2,6 +2,9 @@ package com.cs9033.ping;
 
 import java.util.Stack;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.cs9033.ping.models.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -29,6 +32,8 @@ import android.widget.ProgressBar;
 public class MainActivity extends FragmentActivity implements PingActivity  {
 	private static final String fragClasses = "FRAGMENT_CLASSES";
 	private static final String fragStates = "FRAGMENT_STATES";
+	private static final String currUser = "CURRENT_USER";
+	private static final String currLoc = "CURRENT_LOCATION";
 	
 	private Stack<String> fragmentClasses = new Stack<String>();
 	private Stack<Fragment.SavedState> fragmentStates = new Stack<Fragment.SavedState>();
@@ -83,6 +88,15 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 				fragmentClasses.push(classes[i]);
 				fragmentStates.push(states[i]);
 			}
+			currentLocation = savedInstanceState.getParcelable(currLoc);
+			try {
+				String usr = savedInstanceState.getString(currUser);
+				if (usr != null)
+					currentUser = new User(new JSONObject(savedInstanceState.getString(currUser)));
+			}
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		if (fragmentClasses.empty() || fragmentStates.empty())
@@ -132,6 +146,15 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		fragmentStates.push(fm.saveFragmentInstanceState(frag));
 		outState.putStringArray(fragClasses, fragmentClasses.toArray(new String[fragmentClasses.size()]));
 		outState.putParcelableArray(fragStates, fragmentStates.toArray(new Fragment.SavedState[fragmentStates.size()]));
+		outState.putParcelable(currLoc, currentLocation);
+		try {
+			if (currentUser != null)
+				outState.putString(currUser, currentUser.toJSON().toString());
+			else
+				outState.putString(currUser, null);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
