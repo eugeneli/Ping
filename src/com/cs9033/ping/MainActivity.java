@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -34,6 +35,8 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	private static final String fragStates = "FRAGMENT_STATES";
 	private static final String currUser = "CURRENT_USER";
 	private static final String currLoc = "CURRENT_LOCATION";
+	private static final String currLat = "CURRENT_LATITUDE";
+	private static final String currLong = "CURRENT_LONGITUDE";
 	
 	private Stack<String> fragmentClasses = new Stack<String>();
 	private Stack<Fragment.SavedState> fragmentStates = new Stack<Fragment.SavedState>();
@@ -98,6 +101,19 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 				e.printStackTrace();
 			}
 		}
+		else {
+			try {
+				SharedPreferences storage = getPreferences(0);
+				if (storage.contains(currLat) && storage.contains(currLong))
+					currentLocation = new LatLng(storage.getFloat(currLat, 0), storage.getFloat(currLong, 0));
+				String usr = storage.getString(currUser, null);
+				if (usr != null)
+					currentUser = new User(new JSONObject(usr));
+			}
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
 		
 		if (fragmentClasses.empty() || fragmentStates.empty())
 			loadView(MainFragment.TAG, null);
@@ -125,6 +141,10 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		if (lc.isConnected())
 			lc.removeLocationUpdates(ll);
 		lc.disconnect();
+		SharedPreferences.Editor prefs = getPreferences(0).edit();
+		if (currentLocation != null)
+			prefs.putFloat(currLat, (float)currentLocation.latitude).putFloat(currLong, (float)currentLocation.longitude);
+		prefs.commit();
 		super.onStop();
 	}
 	
@@ -224,6 +244,16 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	@Override
 	public void setCurrentUser(User user) {
 		currentUser = user;
+		SharedPreferences.Editor storage = getPreferences(0).edit();
+		if (currentUser != null) {
+			try {
+				storage.putString(currUser, currentUser.toJSON().toString());
+			}
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		storage.commit();
 	}
 	@Override
 	public LatLng getCurrentLocation() {
