@@ -73,7 +73,7 @@ public class Ping
 	public void setMessage(String msg) { message = msg; }
 	public String getMessage() { return message; }
 	
-	public void setImage(SerializableBitmap img) { image = img; }
+	public void setImage(SerializableBitmap img) { image = img; hasImage = (img != null); }
 	public SerializableBitmap getImage() { return image; }
 	
 	//Serialization methods
@@ -86,10 +86,6 @@ public class Ping
 		
 		json.put(JSON_LAT, coordinates[0]);
 		json.put(JSON_LON, coordinates[1]);
-		/*JSONArray coords = new JSONArray();
-		coords.put(coordinates[0]);
-		coords.put(coordinates[1]);
-		json.put(JSON_COORDS, coords);*/
 		
 		json.put(JSON_HAS_IMAGE, hasImage);
 		json.put(JSON_RATING, rating);
@@ -104,17 +100,18 @@ public class Ping
 	
 	public void fromJSON(JSONObject json) throws JSONException
 	{
-		serverID = json.getString(JSON_SERVER_ID);
+		serverID = json.optString(JSON_SERVER_ID);
 		creatorID = json.getString(JSON_CREATOR_ID);
 		creationDate = json.getLong(JSON_CREATION_DATE);
 		
+		coordinates = new double[2];
 		coordinates[0] = json.getDouble(JSON_LAT);
 		coordinates[1] = json.getDouble(JSON_LON);
 		
 		hasImage = json.getBoolean(JSON_HAS_IMAGE);
 		rating = json.getInt(JSON_RATING);
-		message = json.getString(JSON_MESSAGE);
-		String imageStr = json.getString(JSON_IMAGE);
+		message = json.optString(JSON_MESSAGE);
+		String imageStr = json.optString(JSON_IMAGE);
 		if (hasImage && imageStr != null)
 			image = new SerializableBitmap(json.getString(JSON_IMAGE));
 		else
