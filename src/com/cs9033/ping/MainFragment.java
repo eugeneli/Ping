@@ -80,6 +80,8 @@ public class MainFragment extends Fragment {
 		final CameraPosition pos;
 		if (savedInstanceState != null && savedInstanceState.containsKey("myloc"))
 			pos = (CameraPosition) savedInstanceState.get("myloc");
+		else if (activity.getCurrentLocation() != null)
+			pos = CameraPosition.fromLatLngZoom(activity.getCurrentLocation(), 15);
 		else
 			pos = null;
 		

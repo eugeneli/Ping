@@ -42,9 +42,9 @@ public class CreatePingFragment extends Fragment {
 		super.onAttach(activity);
 		if (activity instanceof PingActivity)
 			this.activity = (PingActivity)activity;
-		ping = new Ping(this.activity.getCurrentUser());
+		setRetainInstance(true);
 	}
-
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_create, container, false);
@@ -93,6 +93,8 @@ public class CreatePingFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		if (ping == null)
+			ping = new Ping(activity.getCurrentUser());
 		activity.onFragmentLoaded(this);
 	}
 	
@@ -103,15 +105,17 @@ public class CreatePingFragment extends Fragment {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == Activity.RESULT_OK && requestCode == CAMERA_TAKE_PHOTO) {
+			File tempFile = getTempFile();
 			BitmapFactory.Options options = new BitmapFactory.Options();
 			options.inSampleSize = 4;
-			Bitmap bmp = BitmapFactory.decodeFile(getTempFile().getPath(), options);
+			Bitmap bmp = BitmapFactory.decodeFile(tempFile.getPath(), options);
 			if (bmp != null) {
 				Toast.makeText(getActivity(), "Photo added", Toast.LENGTH_SHORT).show();
 				ping.setImage(new SerializableBitmap(bmp));
 			}
 			else
 				Toast.makeText(getActivity(), "Could not add photo", Toast.LENGTH_SHORT).show();
+			tempFile.delete();			
 		}
 	}
 }
