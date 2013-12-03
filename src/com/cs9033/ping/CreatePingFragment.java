@@ -80,8 +80,10 @@ public class CreatePingFragment extends Fragment {
 							throws JSONException {
 						if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
 							Toast.makeText(getActivity(), "Could not create ping", Toast.LENGTH_SHORT).show();
-						else
+						else {
+							ping = null;
 							activity.loadView(MainFragment.TAG);
+						}
 					}
 				});
 			}
