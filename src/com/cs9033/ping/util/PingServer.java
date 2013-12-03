@@ -249,7 +249,7 @@ public class PingServer
 				createPingJSON.put(User.JSON_USER_ID, user.getUserID());
 				createPingJSON.put(User.JSON_AUTH_TOKEN, user.getAuthToken());
 				
-				createPingJSON.put(JSON_PING_DATA,  ping.toJSON().toString());
+				createPingJSON.put(JSON_PING_DATA,  ping.toJSON());
 				
 				/*createPingJSON.put(Ping.JSON_CREATOR_ID, ping.getCreatorID());
 				createPingJSON.put(Ping.JSON_CREATION_DATE, ping.getCreationDate());

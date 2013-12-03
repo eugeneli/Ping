@@ -87,7 +87,7 @@ public class Ping
 		json.put(JSON_LAT, coordinates[0]);
 		json.put(JSON_LON, coordinates[1]);
 		
-		json.put(JSON_HAS_IMAGE, hasImage);
+		json.put(JSON_HAS_IMAGE, hasImage ? 1 : 0);
 		json.put(JSON_RATING, rating);
 		json.put(JSON_MESSAGE, message);
 		if (hasImage)
@@ -108,7 +108,7 @@ public class Ping
 		coordinates[0] = json.getDouble(JSON_LAT);
 		coordinates[1] = json.getDouble(JSON_LON);
 		
-		hasImage = json.getBoolean(JSON_HAS_IMAGE);
+		hasImage = json.getInt(JSON_HAS_IMAGE) == 1;
 		rating = json.getInt(JSON_RATING);
 		message = json.optString(JSON_MESSAGE);
 		String imageStr = json.optString(JSON_IMAGE);
