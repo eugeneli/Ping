@@ -14,7 +14,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
@@ -58,305 +57,204 @@ public class PingServer
 		new CreatePingTask(onResponse).execute(user, ping);
 	}
 	
-	
-	public void startUpdateLocationTask(double latitude, double longitude)
+	public void startUpdateLocationTask(double latitude, double longitude, OnResponseListener onResponse)
 	{
-		new UpdateLocationTask().execute(latitude, longitude);
+		new UpdateLocationTask(onResponse).execute(latitude, longitude);
 	}
 	
-	private static class CreateUserTask extends AsyncTask<String, Void, String>
+	public void startVotePingTask(User user, Ping ping, int voteValue, OnResponseListener onResponse) {
+		new VotePingTask(onResponse).execute(user, ping, voteValue);
+	}
+	
+	private static class ServerTask extends AsyncTask<JSONObject, Void, String>
 	{
-		private final String TASK_TAG = "CreateUser";
-		private String responseString = "";
+		private String command;
+		private String taskTag;
 		private OnResponseListener onResponse;
 		
-		private final String JSON_CREATE_USER_COMMAND = "CREATE_USER";
+		public ServerTask(String command, String taskTag, OnResponseListener onResponse)
+		{
+			this.command = command;
+			this.taskTag = taskTag;
+			this.onResponse = onResponse;
+		}
+		
+		@Override
+		protected String doInBackground(JSONObject... params) {
+        	// Create a new HttpClient and Post Header
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(SERVER_URL);
+            
+            //POST data. Add the command first.
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, command));
+            
+			try
+			{
+				//Get the passed-in JSON
+				JSONObject json = params[0];
+					
+				//Add to POST data
+				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, json.toString()));
+				
+				//POST to server
+	            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+	            HttpResponse response = httpClient.execute(httpPost);
+	            
+	            InputStream is = response.getEntity().getContent();
+	            
+	            return convertStreamToString(is);
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+            
+			return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result)
+        {
+        	Log.i(TAG+": "+taskTag, result);
+        	
+        	if(onResponse != null)
+        	{
+        		try {
+        			onResponse.onResponse(new JSONObject(result));
+        		}
+        		catch (JSONException e) {
+        			e.printStackTrace();
+        		}
+        	}
+        }
+
+	}
+	
+	private static class CreateUserTask extends ServerTask
+	{
+		private static final String TASK_TAG = "CreateUser";
+		private static final String JSON_CREATE_USER_COMMAND = "CREATE_USER";
 		
 		public CreateUserTask(OnResponseListener onResponse) {
-			this.onResponse = onResponse;
+			super(JSON_CREATE_USER_COMMAND, TASK_TAG, onResponse);
 		}
 		
-        @Override
-        protected String doInBackground(String... params)
-        {
-        	// Create a new HttpClient and Post Header
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(SERVER_URL);
-            
-            //POST data. Add the command first.
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, JSON_CREATE_USER_COMMAND));
-            
-            //Now build JSON object to be serialized and sent as 2nd POST parameter.
-            JSONObject createUserJSON = new JSONObject();
-            
-			try
-			{
-				//Build json object
-				createUserJSON.put(User.JSON_USER_NAME, params[0]);
-				createUserJSON.put(User.JSON_USER_PWD, params[1]);
-					
-				//Add to POST data
-				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, createUserJSON.toString()));
-				
-				//POST to server
-	            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-	            HttpResponse response = httpClient.execute(httpPost);
-	            
-	            InputStream is = response.getEntity().getContent();
-	            
-	            responseString = convertStreamToString(is);
-
-	            return responseString;
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+		public void execute(String username, String password) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(User.JSON_USER_NAME, username);
+				json.put(User.JSON_USER_PWD, password);
+			}
+			catch (JSONException e) {
 				e.printStackTrace();
 			}
-            
-			return responseString;
-        }
-        
-        @Override
-        protected void onPostExecute(String result)
-        {
-        	Log.i(TAG+": "+TASK_TAG, result);
-        	
-        	if(onResponse != null)
-        	{
-        		try {
-        			onResponse.onResponse(new JSONObject(result));
-        		}
-        		catch (JSONException e) {
-        			e.printStackTrace();
-        		}
-        	}
-        }
+			execute(json);
+		}
     }
 	
-	private static class LoginTask extends AsyncTask<String, Void, String>
+	private static class LoginTask extends ServerTask
 	{
-		private final String TASK_TAG = "Login";
-		private String responseString = "";
-		private OnResponseListener onResponse;
-		
-		private final String JSON_LOGIN_COMMAND = "LOGIN_USER";
+		private static final String TASK_TAG = "Login";
+		private static final String JSON_LOGIN_COMMAND = "LOGIN_USER";
 		
 		public LoginTask(OnResponseListener onResponse) {
-			this.onResponse = onResponse;
+			super(JSON_LOGIN_COMMAND, TASK_TAG, onResponse);
 		}
 		
-        @Override
-        protected String doInBackground(String... params)
-        {
-        	// Create a new HttpClient and Post Header
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(SERVER_URL);
-            
-            //POST data. Add the command first.
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, JSON_LOGIN_COMMAND));
-            
-            //Now build JSON object to be serialized and sent as 2nd POST parameter.
-            JSONObject loginJSON = new JSONObject();
-            
-			try
-			{
-				//Build json object
-				loginJSON.put(User.JSON_USER_NAME, params[0]);
-				loginJSON.put(User.JSON_USER_PWD, params[1]);
-					
-				//Add to POST data
-				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, loginJSON.toString()));
-				
-				//POST to server
-	            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-	            HttpResponse response = httpClient.execute(httpPost);
-	            
-	            InputStream is = response.getEntity().getContent();
-	            
-	            responseString = convertStreamToString(is);
-
-	            return responseString;
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+		public void execute(String username, String password) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(User.JSON_USER_NAME, username);
+				json.put(User.JSON_USER_PWD, password);
+			}
+			catch (JSONException e) {
 				e.printStackTrace();
 			}
-            
-			return responseString;
-        }
-        
-        @Override
-        protected void onPostExecute(String result)
-        {
-        	Log.i(TAG+": "+TASK_TAG, result);
-        	
-        	if(onResponse != null)
-        	{
-        		try {
-        			onResponse.onResponse(new JSONObject(result));
-        		}
-        		catch (JSONException e) {
-        			e.printStackTrace();
-        		}
-        	}
-        }
+			execute(json);
+		}
     }
 
-	private static class CreatePingTask extends AsyncTask<Object, Void, String>
+	private static class CreatePingTask extends ServerTask
 	{
-		private final String TASK_TAG = "CreatePing";
-		private String responseString = "";
-		private OnResponseListener onResponse;
+		private static final String TASK_TAG = "CreatePing";
+		private static final String JSON_CREATE_PING_COMMAND = "CREATE_PING";
 		
-		private final String JSON_CREATE_PING_COMMAND = "CREATE_PING";
-		private final String JSON_PING_DATA = "ping_data";
+		public static final String JSON_PING_DATA = "ping_data";
 		
 		public CreatePingTask(OnResponseListener onResponse) {
-			this.onResponse = onResponse;
+			super(JSON_CREATE_PING_COMMAND, TASK_TAG, onResponse);
 		}
-
-        @Override
-        protected String doInBackground(Object... params)
-        {
-        	//lol java
-        	User user = (User)params[0];
-        	Ping ping = (Ping)params[1];
-        	
-        	// Create a new HttpClient and Post Header
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(SERVER_URL);
-            
-            //POST data. Add the command first.
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, JSON_CREATE_PING_COMMAND));
-            
-            //Now build JSON object to be serialized and sent as 2nd POST parameter.
-            JSONObject createPingJSON = new JSONObject();
-            
-			try
-			{
-				//Build json object
-				createPingJSON.put(User.JSON_USER_ID, user.getUserID());
-				createPingJSON.put(User.JSON_AUTH_TOKEN, user.getAuthToken());
-				
-				createPingJSON.put(JSON_PING_DATA,  ping.toJSON());
-				
-				/*createPingJSON.put(Ping.JSON_CREATOR_ID, ping.getCreatorID());
-				createPingJSON.put(Ping.JSON_CREATION_DATE, ping.getCreationDate());
-				createPingJSON.put(Ping.JSON_LAT, ping.getCoordinates()[0]);
-				createPingJSON.put(Ping.JSON_LON, ping.getCoordinates()[1]);
-				createPingJSON.put(Ping.JSON_HAS_IMAGE, ping.hasImage());
-				createPingJSON.put(Ping.JSON_RATING, ping.getRating());
-				createPingJSON.put(Ping.JSON_MESSAGE, ping.getMessage());
-				createPingJSON.put(Ping.JSON_IMAGE, ping.getImage().getBase64());*/
-					
-				//Add to POST data
-				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, createPingJSON.toString()));
-				
-				//POST to server
-	            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-	            HttpResponse response = httpClient.execute(httpPost);
-	            
-	            InputStream is = response.getEntity().getContent();
-	            
-	            responseString = convertStreamToString(is);
-
-	            return responseString;
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+		
+		public void execute(User user, Ping ping) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(User.JSON_USER_ID, user.getUserID());
+				json.put(User.JSON_AUTH_TOKEN, user.getAuthToken());
+			
+				json.put(JSON_PING_DATA,  ping.toJSON());
+			}
+			catch (JSONException e) {
 				e.printStackTrace();
 			}
-            
-			return responseString;
-        }
-        
-        @Override
-        protected void onPostExecute(String result)
-        {
-        	Log.i(TAG+": "+TASK_TAG, responseString);
-        	
-        	if (onResponse != null) {
-        		try {
-        			onResponse.onResponse(new JSONObject(responseString));
-        		}
-        		catch (JSONException e) {
-        			e.printStackTrace();
-        		}
-        	}
-        }
-    }
+			execute(json);
+		}
+	}
 	
 	//Successful Response: {"response_code": 0}
-	private static class UpdateLocationTask extends AsyncTask<Double, Void, String>
+	private static class UpdateLocationTask extends ServerTask
 	{
-		private final String TASK_TAG = "UpdateLoc";
-		private String result = "";
-		private final String JSON_UPDATE_LOCATION_COMMAND = "UPDATE_LOCATION";
-		private final String JSON_LATITUDE = "latitude";
-		private final String JSON_LONGITUDE = "longitude";
-		private final String JSON_DATETIME = "datetime";
+		private static final String TASK_TAG = "UpdateLoc";
+		private static final String JSON_UPDATE_LOCATION_COMMAND = "UPDATE_LOCATION";
 		
-        @Override
-        protected String doInBackground(Double... params)
-        {
-        	// Create a new HttpClient and Post Header
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(SERVER_URL);
-            httpPost.setHeader("Accept", "application/json");
-            httpPost.setHeader("Content-type", "application/json");
-            
-            JSONObject updateLocJSON = new JSONObject();
-			try
-			{
-				//Build json object
-				updateLocJSON.put(JSON_COMMAND, JSON_UPDATE_LOCATION_COMMAND);
-				updateLocJSON.put(JSON_LATITUDE, params[0]);
-				updateLocJSON.put(JSON_LONGITUDE, params[1]);
-				updateLocJSON.put(JSON_DATETIME, System.currentTimeMillis());
-					
-				//Create string from it and post to server
-				StringEntity se = new StringEntity(updateLocJSON.toString());
-	            httpPost.setEntity(se);
-	            HttpResponse response = httpClient.execute(httpPost);
-	            InputStream is = response.getEntity().getContent();
-	            
-	            result = convertStreamToString(is);
-	            
-	            return result;
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+		public static final String JSON_LATITUDE = "latitude";
+		public static final String JSON_LONGITUDE = "longitude";
+		public static final String JSON_DATETIME = "datetime";
+		
+		public UpdateLocationTask(OnResponseListener onResponse) {
+			super(JSON_UPDATE_LOCATION_COMMAND, TASK_TAG, onResponse);
+		}
+		
+		public void execute(double latitude, double longitude) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(JSON_LATITUDE, latitude);
+				json.put(JSON_LONGITUDE, longitude);
+				json.put(JSON_DATETIME, System.currentTimeMillis());
+			}
+			catch (JSONException e) {
 				e.printStackTrace();
 			}
-            
-			return result;
-        }
-        
-        @Override
-        protected void onPostExecute(String result)
-        {
-        	Log.i(TAG+": "+TASK_TAG, result);
-        }
+			execute(json);
+		}
     }
+	
+	private static class VotePingTask extends ServerTask {
+		private final static String TASK_TAG = "VotePing";
+		private final static String JSON_VOTE_PING_COMMAND = "VOTE_PING";
+		
+		public final static String JSON_VOTE_VALUE = "VoteValue";
+		
+		public VotePingTask(OnResponseListener onResponse) {
+			super(JSON_VOTE_PING_COMMAND, TASK_TAG, onResponse);
+		}
+		
+		public void execute(User user, Ping ping, int voteValue) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(User.JSON_USER_ID, user.getUserID());
+				json.put(User.JSON_AUTH_TOKEN, user.getAuthToken());
+				json.put(Ping.JSON_SERVER_ID, ping.getServerID());
+				json.put(JSON_VOTE_VALUE, Integer.signum(voteValue)); // -1, 0, or 1
+			}
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+			execute(json);
+		}
+	}
 	
 	private static String convertStreamToString(InputStream is)
     {
