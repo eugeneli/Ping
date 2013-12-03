@@ -66,7 +66,7 @@ class Ping
 
 	public function createNewPing($data)
 	{
-		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ." (ping_id, creator_id, create_date, latitude, longitude, has_image, rating, message, b64image) VALUES (:id,:creatorId,:createDate,:lat,:lon,:hasImg,:rating,:msg,:b64)");
+		$stmt = $this->db->prepare("INSERT INTO ". self::TABLE_NAME ." (ping_id, creator_id, create_date, latitude, longitude, has_image, rating, message, b64image) VALUES (:id,:creatorId,:createDate,:lat,:lon,:hasImg,:defRating,:msg,:b64)");
 		$stmt->execute(array(
 				':id' => $data[self::ID], 
 				':creatorId' => $data[self::CREATOR_ID], 
@@ -74,12 +74,12 @@ class Ping
 				':lat' => $data[self::LATITUDE], 
 				':lon' => $data[self::LONGITUDE], 
 				':hasImg' => $data[self::HAS_IMAGE], 
-				':rating' => 0, 
+				':defRating' => 0, 
 				':msg' => $data[self::MESSAGE], 
 				':b64' => $data[self::B64IMAGE]));
 		$affectedRows = $stmt->rowCount();
 
-		if($affectedRows == 0)
+		if($affectedRows != 0)
 		{
 			$this->id = $data[self::ID];
 			$this->creatorId = $data[self::CREATOR_ID];
