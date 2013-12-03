@@ -8,8 +8,8 @@
 		- Vote pings (Needs auth)
 
 	GET:
-		- Get user info (Needs auth)
-		- Get pings
+		- Get neaby pings
+		- Get full ping info (includes image data)
 */
 
 require_once("db.php");
@@ -87,8 +87,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
 			if($success)
 			{
-				$response = $ping->asArray();
 				$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
+
+				$pingDataArray = $ping->asArray();
+				unset($pingDataArray[Ping::B64IMAGE]);
+
+				$response[JSON_PING_DATA] = $pingDataArray;
 			}
 			else
 				$response[RESPONSE_CODE] = RESPONSE_FAILURE;
