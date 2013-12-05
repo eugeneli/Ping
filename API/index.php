@@ -137,12 +137,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 			$voteValue = $data[Ping::VOTE_VALUE];
 
 			if(!$user->votedFor($pingId)) //Prevent duplicate votes
-			{
+			{			
 				$ping = new Ping();
 				if($ping->getPingById($pingId))
 				{
 					if($ping->vote($userId, $voteValue)) //do vote
+					{
 						$response[RESPONSE_CODE] = RESPONSE_SUCCESS;
+						$response[Ping::RATING] = $ping->getRating();
+					}
 					else
 						$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 				}
@@ -200,7 +203,7 @@ else if($_SERVER["REQUEST_METHOD"] == "GET")
 		}
 		echo json_encode($response);
 	}
-	else if($_GET[COMMAND == GET_PING_INFO])
+	else if($_GET[COMMAND == GET_PING_INFO]) //Returns complete data for a single Ping, including image.
 	{
 		$data = json_decode($_GET[JSON_DATA], true);
 		$pingId = $data[Ping::ID];

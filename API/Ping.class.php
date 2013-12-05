@@ -35,6 +35,7 @@ class Ping
 	}
 
 	public function getId() { return $this->id; }
+	public function getRating() { return $this->rating; }
 
 	public function getPingById($id)
 	{
@@ -98,6 +99,7 @@ class Ping
 
 	public function vote($userId, $val)
 	{
+		//Change rating
 		$this->rating += $val;
 
 		$stmt = $this->db->prepare("UPDATE ". self::TABLE_NAME ." SET ". self::RATING ."=? WHERE". self::ID ."=?");
@@ -107,17 +109,29 @@ class Ping
 		
 		$voteSuccess = ($stmt->rowCount() == 0);
 
-		//Prevent duplicate votes by saving to db
-		$saveStmt= $this->db->prepare("INSERT INTO votes (user_id, ping_id, vote) VALUES (:uid,:pid,:vote)");
-		$saveStmt->execute(array(
-				':user_id' => $userId, 
-				':ping_id' => $this->id, 
-				':vote' => val
-				));
+		//Check if this user has already voted. If so, change the vote log in database. Else, insert new row.
+		$updateStmt = $this->db->prepare("UPDATE votes SET vote=:vote WHERE ping_id=:pid");
+		$updateStmt->execute(array(':vote' => $val, ':pid' => $this->id));
+		$affectedRows = $updateStmt->rowCount();
 
-		$saveVoteSuccess = ($saveStmt->rowCount() == 0);
+		$updatedRow = ($affectedRows != 0);
 
-		return $voteSuccess && $saveVoteSuccess;
+		if(!$updatedRow) //First time user has voted for this ping. Insert into db.
+		{
+			//Prevent duplicate votes by saving to db
+			$saveStmt= $this->db->prepare("INSERT INTO votes (user_id, ping_id, vote) VALUES (:uid,:pid,:vote)");
+			$saveStmt->execute(array(
+					':user_id' => $userId, 
+					':ping_id' => $this->id, 
+					':vote' => $val
+					));
+
+			$saveVoteSuccess = ($saveStmt->rowCount() == 0);
+
+			return $voteSuccess && $saveVoteSuccess;
+		}
+		else
+			return $voteSuccess && $updatedRow;
 	}
 
 	public function asJSON()
