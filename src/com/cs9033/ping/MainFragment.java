@@ -1,9 +1,16 @@
 package com.cs9033.ping;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.cs9033.ping.models.Ping;
+import com.cs9033.ping.util.PingServer;
+import com.cs9033.ping.util.PingServer.OnResponseListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
@@ -26,6 +33,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainFragment extends Fragment {
 	public static final String TAG = "MainFragment";
@@ -46,6 +54,7 @@ public class MainFragment extends Fragment {
 	private double userRadius = 1;
 	private Circle myCircle;
 	private Map<String, MapPing> mapPings;
+	private ArrayList<Ping> pings;
 	
 	@Override
 	public void onAttach(Activity activity) {
@@ -183,6 +192,35 @@ public class MainFragment extends Fragment {
 	}
 	private GoogleMap getMap() {
 		return getMapFragment().getMap();
+	}
+	
+	public ArrayList<Ping> getPingsFromJSON(JSONArray array) throws JSONException
+	{
+		ArrayList<Ping> pings = new ArrayList<Ping>();
+		for (int n = 0; n < array.length(); n++)
+			pings.add(new Ping(array.getJSONObject(n)));
+		return pings;
+	}
+	
+	public void getAllPings()
+	{
+		
+		PingServer server = new PingServer();
+		server.startGetPingsTask(userLoc.latitude, userLoc.longitude, new OnResponseListener(){
+			@Override
+			public void onResponse(JSONObject response)
+					throws JSONException {
+				if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
+					Toast.makeText(getActivity(), "Could not get pings", Toast.LENGTH_SHORT).show();
+				else {
+					JSONArray array = response.getJSONArray(PingServer.ASYNC_RESULT);
+					ArrayList<Ping> pings = getPingsFromJSON(array);
+					for (Ping ping : pings)
+						addOrUpdatePing(ping);
+				}
+			}
+		});
+		
 	}
 
 }

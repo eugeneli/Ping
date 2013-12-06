@@ -1,11 +1,13 @@
 package com.cs9033.ping;
 
+import java.util.Calendar;
 import java.util.Stack;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cs9033.ping.models.User;
+import com.cs9033.ping.util.PingService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -15,6 +17,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.model.LatLng;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
@@ -42,9 +46,12 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	private Stack<Fragment.SavedState> fragmentStates = new Stack<Fragment.SavedState>();
 	private LocationClient lc;
 	public static final int GOOGLE_MAPS_FIX_CONNECTION = 9001;
+	protected static final long UPDATE_INTERVAL = 1000;
 	
 	private User currentUser;
 	private LatLng currentLocation;
+	
+	private final Context c = this.getBaseContext();
 	
 	private ConnectionCallbacks conn = new ConnectionCallbacks() {
 		@Override
@@ -69,6 +76,7 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		}
 	};
 	
+	
 	private LocationListener ll = new LocationListener() {
 		@Override
 		public void onLocationChanged(Location loc) {
@@ -76,6 +84,12 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 			MainFragment fragment = (MainFragment) getSupportFragmentManager().findFragmentByTag(MainFragment.TAG);
 			if (fragment != null)
 				fragment.updateLocation(currentLocation);
+			
+			Intent intent = new Intent(c, PingService.class);
+			PendingIntent pendingIntent = PendingIntent.getService(c, 0, intent, 0);
+			
+			AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+			alarm.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), UPDATE_INTERVAL, pendingIntent);
 		}
 	};
 
