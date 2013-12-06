@@ -108,9 +108,9 @@ private final String TAG = "UpdateService";
 						throws JSONException {
 					if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
 						Log.d(TAG, "Couldn't get pings");
-					else if (thereAreNewPings(response))
+					else if (!thereAreNewPings(response))
 					{
-						
+						Log.d(TAG, "No new pings");
 					}
 					else {
 						NotificationCompat.Builder mBuilder =
