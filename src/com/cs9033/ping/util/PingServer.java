@@ -13,6 +13,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -66,6 +67,11 @@ public class PingServer
 		new VotePingTask(onResponse).execute(user, ping, voteValue);
 	}
 	
+	public void startGetPingsTask(double latitude, double longitude, OnResponseListener onResponse) {
+		new GetPingsTask(onResponse).execute(latitude, longitude);
+	}
+	
+	
 	private static class ServerTask extends AsyncTask<JSONObject, Void, String>
 	{
 		private String command;
@@ -84,6 +90,7 @@ public class PingServer
         	// Create a new HttpClient and Post Header
             HttpClient httpClient = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(SERVER_URL);
+            HttpGet httpGet = new HttpGet(SERVER_URL + "/" + command);
             
             //POST data. Add the command first.
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
@@ -96,14 +103,24 @@ public class PingServer
 					
 				//Add to POST data
 				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, json.toString()));
-				
-				//POST to server
-	            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-	            HttpResponse response = httpClient.execute(httpPost);
+
+				if (command == "GetPings" || command == "GetPingInfo")
+				{
+					//GET to server
+					HttpResponse response = httpClient.execute(httpGet);
+					InputStream is = response.getEntity().getContent();
+		            return convertStreamToString(is);
+				}
+				else
+				{
+					//POST to server
+		            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+		            HttpResponse response = httpClient.execute(httpPost);
+		            InputStream is = response.getEntity().getContent();
+		            return convertStreamToString(is);
+				}
 	            
-	            InputStream is = response.getEntity().getContent();
-	            
-	            return convertStreamToString(is);
+
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			} catch (ClientProtocolException e) {
@@ -248,6 +265,30 @@ public class PingServer
 				json.put(User.JSON_AUTH_TOKEN, user.getAuthToken());
 				json.put(Ping.JSON_SERVER_ID, ping.getServerID());
 				json.put(JSON_VOTE_VALUE, Integer.signum(voteValue)); // -1, 0, or 1
+			}
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+			execute(json);
+		}
+	}
+	
+	private static class GetPingsTask extends ServerTask {
+		private final static String TASK_TAG = "GetPings";
+		private final static String JSON_GET_PINGS_COMMAND = "GET_PINGS";
+		
+		public static final String JSON_LATITUDE = "latitude";
+		public static final String JSON_LONGITUDE = "longitude";
+		
+		public GetPingsTask(OnResponseListener onResponse) {
+			super(JSON_GET_PINGS_COMMAND, TASK_TAG, onResponse);
+		}
+		
+		public void execute(double latitude, double longitude) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(JSON_LATITUDE, latitude);
+				json.put(JSON_LONGITUDE, longitude);
 			}
 			catch (JSONException e) {
 				e.printStackTrace();
