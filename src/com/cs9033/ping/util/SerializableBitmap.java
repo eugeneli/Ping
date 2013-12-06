@@ -28,7 +28,7 @@ public class SerializableBitmap
 	private String toBase64(Bitmap bmp)
 	{
 	    ByteArrayOutputStream bitmapBytes = new ByteArrayOutputStream();
-	    bitmap.compress(Bitmap.CompressFormat.JPEG, 5, bitmapBytes); //Reduce quality if image is too big!
+	    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, bitmapBytes); //Reduce quality if image is too big!
 	    
 	    return Base64.encodeToString(bitmapBytes.toByteArray(), Base64.DEFAULT);
 	}

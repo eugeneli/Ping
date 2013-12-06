@@ -2,73 +2,62 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/yellow"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="@color/yellow" >
-            
+    android:paddingTop="@dimen/activity_vertical_margin" >
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="@string/ping_hint" />
+
     <LinearLayout
+        android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="2dp"
-        android:layout_centerInParent="true"
-        android:padding="1dp"
-        android:background="@android:color/black"
-        android:orientation="vertical" >
-	    
-	    <TextView
-	        android:id="@+id/message"
-	        android:layout_width="match_parent"
-	        android:layout_height="0dip"
-	        android:layout_weight="0.28"
-	        android:background="@color/light_gray"
-	        android:gravity="top|left"
-	        android:hint="@string/ping_hint"
-	        android:padding="16dp" >
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/image"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
 
-	    </TextView>
+        <Button
+            android:id="@+id/ping_minus"
+            style="@style/VotingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".3"
+            android:text="@string/ping_minus" />
 
-	    <LinearLayout
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:orientation="horizontal"
-	         >
+        <Button
+            android:id="@+id/ping_plus"
+            style="@style/VotingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".3"
+            android:text="@string/ping_plus" />
 
-	        <Button
-	            android:id="@+id/ping_plus"
-	            style="@style/VotingButton"
-	            android:layout_weight=".5"
-	            android:layout_width="match_parent"
-	            android:layout_height="wrap_content"
-	            android:layout_marginTop="2dp"
-	        android:layout_marginLeft="1dp"
-	        android:layout_marginRight="1dp"
-	            android:text="@string/ping_plus" />
+        <Button
+            android:id="@+id/ping_return"
+            style="@style/BlueButton.Border"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".3"
+            android:text="@string/ping_return" />
+    </LinearLayout>
 
-	        <Button
-	        android:id="@+id/ping_minus"
-	        style="@style/VotingButton"
-	        android:layout_weight=".5"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:layout_marginTop="1dp"
-	        android:layout_marginRight="1dp"
-	        android:text="@string/ping_minus" />
-	    </LinearLayout>
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/linearLayout1"
+        android:layout_alignLeft="@+id/linearLayout1"
+        android:layout_weight="0.5"
+        android:background="@color/light_gray"
+        android:gravity="top|left"
+        android:hint="@string/ping_hint"
+        android:padding="16dp" />
 
-	    
-
-	    <ImageView
-	        android:id="@+id/image"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:contentDescription="@string/ping_hint" />
-	    <Button style="@style/BlueButton.Border"
-	        android:id="@+id/ping_return"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:text="@string/ping_return" 
-	        />
-	</LinearLayout>
 </RelativeLayout>

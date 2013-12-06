@@ -61,6 +61,7 @@ public class ViewPingFragment extends Fragment {
 				returnToMainFragment();
 			}
 		});
+		((TextView)view.findViewById(R.id.message)).bringToFront();
 		return view;
 	}
 
