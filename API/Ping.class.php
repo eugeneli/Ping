@@ -16,6 +16,7 @@ class Ping
 
 	const VOTE_VALUE = "vote_value";
 	const PING_DATA = "ping_data";
+	const PING_TAG = "tag";
 
 	private $db;
 	private $id;
@@ -102,12 +103,13 @@ class Ping
 		//Change rating
 		$this->rating += $val;
 
-		$stmt = $this->db->prepare("UPDATE ". self::TABLE_NAME ." SET ". self::RATING ."=? WHERE". self::ID ."=?");
-		$stmt->bindValue(1, $this->rating, PDO::PARAM_STR);
-		$stmt->bindValue(2, $this->id, PDO::PARAM_STR);
-		$stmt->execute();
+		$stmt = $this->db->prepare("UPDATE ". self::TABLE_NAME ." SET ". self::RATING ."=:rating WHERE ". self::ID ."=:pid");
+		$stmt->execute(array(
+			':rating' => $this->rating,
+			':pid' => $this->id
+			));
 		
-		$voteSuccess = ($stmt->rowCount() == 0);
+		$voteSuccess = ($stmt->rowCount() != 0);
 
 		//Check if this user has already voted. If so, change the vote log in database. Else, insert new row.
 		$updateStmt = $this->db->prepare("UPDATE votes SET vote=:vote WHERE ping_id=:pid");
@@ -121,12 +123,12 @@ class Ping
 			//Prevent duplicate votes by saving to db
 			$saveStmt= $this->db->prepare("INSERT INTO votes (user_id, ping_id, vote) VALUES (:uid,:pid,:vote)");
 			$saveStmt->execute(array(
-					':user_id' => $userId, 
-					':ping_id' => $this->id, 
+					':uid' => $userId, 
+					':pid' => $this->id, 
 					':vote' => $val
 					));
 
-			$saveVoteSuccess = ($saveStmt->rowCount() == 0);
+			$saveVoteSuccess = ($saveStmt->rowCount() != 0);
 
 			return $voteSuccess && $saveVoteSuccess;
 		}
