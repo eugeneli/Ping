@@ -2,6 +2,7 @@ package com.cs9033.ping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -24,6 +25,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -72,10 +74,6 @@ public class MainFragment extends Fragment {
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putParcelable("myloc", getMap().getCameraPosition());
-		ArrayList<String> list = new ArrayList<String>();
-		for (String id: mapPings.keySet())
-			list.add(id);
-		outState.putStringArrayList("ids", list);
 	}
 	
 	@Override
@@ -220,6 +218,15 @@ public class MainFragment extends Fragment {
 					ArrayList<Ping> pings = getPingsFromJSON(array);
 					for (Ping ping : pings)
 						addOrUpdatePing(ping);
+					ArrayList<String> list = new ArrayList<String>();
+					for (String id: mapPings.keySet())
+						list.add(id);
+					SharedPreferences pref = MainFragment.this.getActivity().getPreferences(0);
+					SharedPreferences.Editor edit = pref.edit();
+					if (pref.contains("ids"))
+						edit.remove("ids");
+					HashSet<String> hash = new HashSet<String>(list);
+					edit.putStringSet("ids", hash);
 				}
 			}
 		});
