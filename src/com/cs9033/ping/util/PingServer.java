@@ -235,7 +235,7 @@ public class PingServer
 		private final static String TASK_TAG = "VotePing";
 		private final static String JSON_VOTE_PING_COMMAND = "VOTE_PING";
 		
-		public final static String JSON_VOTE_VALUE = "VoteValue";
+		public final static String JSON_VOTE_VALUE = "vote_value";
 		
 		public VotePingTask(OnResponseListener onResponse) {
 			super(JSON_VOTE_PING_COMMAND, TASK_TAG, onResponse);
