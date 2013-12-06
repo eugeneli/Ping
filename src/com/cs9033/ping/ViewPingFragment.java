@@ -124,6 +124,6 @@ public class ViewPingFragment extends Fragment {
 	
 	private void returnToMainFragment(View v)
 	{
-		
+		activity.loadView(MainFragment.TAG);
 	}
 }
