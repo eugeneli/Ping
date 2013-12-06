@@ -10,9 +10,9 @@ import com.cs9033.ping.util.PingServer.OnResponseListener;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -43,6 +43,24 @@ public class ViewPingFragment extends Fragment {
 			up.setVisibility(View.GONE);
 			down.setVisibility(View.GONE);
 		}
+		up.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				voteUp();
+			}
+		});
+		down.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				voteDown();
+			}
+		});
+		((Button)view.findViewById(R.id.ping_return)).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				returnToMainFragment();
+			}
+		});
 		return view;
 	}
 
@@ -88,7 +106,7 @@ public class ViewPingFragment extends Fragment {
 			image.setVisibility(View.GONE);
 	}
 	
-	private void voteUp(View v)
+	private void voteUp()
 	{
 		PingServer ps = new PingServer();
 		ps.startVotePingTask(activity.getCurrentUser(), ping, 1, new OnResponseListener(){
@@ -99,13 +117,12 @@ public class ViewPingFragment extends Fragment {
 				}
 				else {
 					ping.rateUp();
-					activity.onFragmentLoaded(ViewPingFragment.this);
 				}
 			}
 		});
 	}
 	
-	private void voteDown(View v)
+	private void voteDown()
 	{
 		PingServer ps = new PingServer();
 		ps.startVotePingTask(activity.getCurrentUser(), ping, -1, new OnResponseListener(){
@@ -116,13 +133,12 @@ public class ViewPingFragment extends Fragment {
 				}
 				else {
 					ping.rateDown();
-					activity.onFragmentLoaded(ViewPingFragment.this);
 				}
 			}
 		});
 	}
 	
-	private void returnToMainFragment(View v)
+	private void returnToMainFragment()
 	{
 		activity.loadView(MainFragment.TAG);
 	}

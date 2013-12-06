@@ -44,7 +44,6 @@
 	            android:layout_marginTop="2dp"
 	        android:layout_marginLeft="1dp"
 	        android:layout_marginRight="1dp"
-	        	android:onClick="voteUp"
 	            android:text="@string/ping_plus" />
 
 	        <Button
@@ -55,7 +54,6 @@
 	        android:layout_height="wrap_content"
 	        android:layout_marginTop="1dp"
 	        android:layout_marginRight="1dp"
-	        android:onClick="voteDown"
 	        android:text="@string/ping_minus" />
 	    </LinearLayout>
 
@@ -71,7 +69,6 @@
 	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
 	        android:text="@string/ping_return" 
-	        android:onClick="returnToMainFragment"
 	        />
 	</LinearLayout>
 </RelativeLayout>

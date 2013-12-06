@@ -102,7 +102,7 @@ private final String TAG = "UpdateService";
 	    @Override
 	    public void onLocationChanged(Location loc)
 	    {
-	    	server.startGetPingsTask(loc.getLatitude(), loc.getLongitude(), new OnResponseListener(){
+	    	server.startGetPingsTask(loc.getLatitude(), loc.getLongitude(), 320, new OnResponseListener(){
 				@Override
 				public void onResponse(JSONObject response)
 						throws JSONException {

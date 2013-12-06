@@ -68,8 +68,8 @@ public class PingServer
 		new VotePingTask(onResponse).execute(user, ping, voteValue);
 	}
 	
-	public void startGetPingsTask(double latitude, double longitude, OnResponseListener onResponse) {
-		new GetPingsTask(onResponse).execute(latitude, longitude);
+	public void startGetPingsTask(double latitude, double longitude, double radius, OnResponseListener onResponse) {
+		new GetPingsTask(onResponse).execute(latitude, longitude, radius, null);
 	}
 
 	public void startGetPingInfoTask(String pingId, OnResponseListener onResponse) {
@@ -302,17 +302,23 @@ public class PingServer
 		
 		public static final String JSON_LATITUDE = "latitude";
 		public static final String JSON_LONGITUDE = "longitude";
+		public static final String JSON_RADIUS = "radius";
 		public static final String JSON_HASHTAG = "hashtag";
 		
+		private static final double METERS_TO_MILES = 0.000621371;
 		public GetPingsTask(OnResponseListener onResponse) {
 			super(JSON_GET_PINGS_COMMAND, TASK_TAG, onResponse);
 		}
 		
-		public void execute(double latitude, double longitude) {
+		public void execute(double latitude, double longitude, double radius, String hashtag) {
 			JSONObject json = new JSONObject();
 			try {
 				json.put(JSON_LATITUDE, latitude);
 				json.put(JSON_LONGITUDE, longitude);
+				json.put(JSON_RADIUS, radius * METERS_TO_MILES);
+				if (hashtag != null) {
+					json.put(JSON_HASHTAG, hashtag);
+				}
 			}
 			catch (JSONException e) {
 				e.printStackTrace();
@@ -320,18 +326,6 @@ public class PingServer
 			execute(json);
 		}
 		
-		public void execute(double latitude, double longitude, String hashtag) {
-			JSONObject json = new JSONObject();
-			try {
-				json.put(JSON_LATITUDE, latitude);
-				json.put(JSON_LONGITUDE, longitude);
-				json.put(JSON_HASHTAG, hashtag);
-			}
-			catch (JSONException e) {
-				e.printStackTrace();
-			}
-			execute(json);
-		}
 	}
 	
 	private static class GetPingInfoTask extends ServerTask {
