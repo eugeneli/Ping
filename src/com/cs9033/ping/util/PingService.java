@@ -81,23 +81,10 @@ private final String TAG = "UpdateService";
 						        .setContentTitle("New Pings")
 						        .setContentText("You have new pings");
 						// Creates an explicit intent for an Activity in your app
-						Intent resultIntent = new Intent(c, MainActivity.class);
-
-						// The stack builder object will contain an artificial back stack for the
-						// started Activity.
-						// This ensures that navigating backward from the Activity leads out of
-						// your application to the Home screen.
-						TaskStackBuilder stackBuilder = TaskStackBuilder.create(c);
-						// Adds the back stack for the Intent (but not the Intent itself)
-						stackBuilder.addParentStack(MainActivity.class);
-						// Adds the Intent that starts the Activity to the top of the stack
-						stackBuilder.addNextIntent(resultIntent);
-						PendingIntent resultPendingIntent =
-						        stackBuilder.getPendingIntent(
-						            0,
-						            PendingIntent.FLAG_UPDATE_CURRENT
-						        );
-						mBuilder.setContentIntent(resultPendingIntent);
+						Intent intent = new Intent(c, MainActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						PendingIntent pi = PendingIntent.getActivity(c, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+						mBuilder.setContentIntent(pi);
 						NotificationManager mNotificationManager =
 						    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 						// mId allows you to update the notification later on.
