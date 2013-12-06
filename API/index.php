@@ -219,8 +219,8 @@ else if($_SERVER["REQUEST_METHOD"] == "GET")
 	}
 	else if($_GET[COMMAND] == GET_PING_INFO) //Returns complete data for a single Ping, including image.
 	{
-		$data = json_decode($_GET[JSON_DATA], true);
-		$pingId = $data[Ping::ID];
+		//$data = json_decode($_GET[JSON_DATA], true);
+		$pingId = $_GET[Ping::ID];
 
 		$ping = new Ping();
 		$pingExists = $ping->getPingById($pingId);
