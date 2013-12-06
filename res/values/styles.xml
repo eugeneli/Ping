@@ -27,5 +27,11 @@
     <style name="BlueButton.Border">
         <item name="android:background">@drawable/button_border</item>
     </style>
+    <style name="VotingButton" parent="@android:style/Widget.Button">
+        <item name="android:background">@drawable/vote_button</item>
+        <item name="android:textColor">@color/button_text</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">36sp</item>
+    </style>
 
 </resources>

@@ -7,4 +7,6 @@
     <color name="see_thru_light_blue">#3300aaff</color>
     <color name="see_thru_lighter_blue">#3300ccff</color>
     <color name="button_text">#ccffffff</color>
+    <color name="red">#ff0000</color>
+    <color name="light_red">#ff1919</color>
 </resources>
