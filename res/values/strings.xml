@@ -11,5 +11,7 @@
     <string name="ping_submit">SUBMIT</string>
     <string name="ping_hint">What\'s up?</string>
     <string name="shared_pref">Pref</string>
+    <string name="ping_return">RETURN</string>
     <string name="sixteenth_letter_of_the_alphabet_uppercase_for_internationalization_purposes">P</string>
+
 </resources>

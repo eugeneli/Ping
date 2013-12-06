@@ -151,6 +151,16 @@ public class MainFragment extends Fragment {
 				activity.loadView(CreatePingFragment.TAG);
 			}
 		});
+		((ImageButton) getView().findViewById(R.id.ping_list)).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				/*String id = "52a15fd9bbbf3";
+				Bundle bundle = new Bundle();
+				bundle.putString(Ping.JSON_SERVER_ID, id);
+				activity.loadView(ViewPingFragment.TAG, bundle);*/
+				getAllPings();
+			}
+		});
 	}
 	
 	public void updateRadius(double radius) {

@@ -51,7 +51,7 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 	private User currentUser;
 	private LatLng currentLocation;
 	
-	private final Context c = this.getBaseContext();
+	private final Context c = this;
 	
 	private ConnectionCallbacks conn = new ConnectionCallbacks() {
 		@Override
@@ -109,7 +109,7 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 			try {
 				String usr = savedInstanceState.getString(currUser);
 				if (usr != null)
-					currentUser = new User(new JSONObject(savedInstanceState.getString(currUser)));
+					currentUser = new User(new JSONObject(usr));
 			}
 			catch (JSONException e) {
 				e.printStackTrace();
@@ -132,7 +132,7 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		if (fragmentClasses.empty() || fragmentStates.empty())
 			loadView(MainFragment.TAG, null);
 		else
-			loadView(fragmentClasses.pop(), fragmentStates.pop());
+			loadView(fragmentClasses.pop(), fragmentStates.pop(), null);
 		
 		lc = new LocationClient(this, conn, fail);
 	}	
@@ -196,12 +196,17 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		if (fragmentClasses.empty() || fragmentStates.empty())
 			finish();
 		else
-			loadView(fragmentClasses.pop(), fragmentStates.pop());
+			loadView(fragmentClasses.pop(), fragmentStates.pop(), null);
 	}
 
 	public void loadView(String tag) {
 		saveCurrentState();
-		loadView(tag, null);
+		loadView(tag, null, null);
+	}
+	
+	public void loadView(String tag, Bundle bundle) {
+		saveCurrentState();
+		loadView(tag, null, bundle);
 	}
 
 	private void saveCurrentState() {
@@ -213,8 +218,8 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 		}
 	}
 	
-	private void loadView(String tag, Fragment.SavedState state) {
-		Fragment newF = getFragment(tag, state);
+	private void loadView(String tag, Fragment.SavedState state, Bundle bundle) {
+		Fragment newF = getFragment(tag, state, bundle);
 		
 		FrameLayout frame = (FrameLayout) findViewById(R.id.frame);
 
@@ -232,14 +237,16 @@ public class MainActivity extends FragmentActivity implements PingActivity  {
 			.commit();				
 	}
 
-	private Fragment getFragment(String tag, Fragment.SavedState state) {
+	private Fragment getFragment(String tag, Fragment.SavedState state, Bundle bundle) {
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(tag);
 		if (frag != null) return frag;
 		if (tag == MainFragment.TAG) frag = new MainFragment();
 		if (tag == LoginFragment.TAG) frag = new LoginFragment();
 		if (tag == CreatePingFragment.TAG) frag = new CreatePingFragment();
+		if (tag == ViewPingFragment.TAG) frag = new ViewPingFragment();
 		if (frag != null) {
 			frag.setInitialSavedState(state);
+			frag.setArguments(bundle);
 		}
 		return frag;
 	}
