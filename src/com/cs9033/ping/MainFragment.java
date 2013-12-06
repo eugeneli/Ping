@@ -160,7 +160,39 @@ public class MainFragment extends Fragment {
 				sd.setListener(new OnSearchListener() {
 					@Override
 					public void onSearch(String tag) {
-						// TODO search by this tag
+						String dummy = "{\"message\":\"Test ping\",\"has_image\":1,\"create_date\":1386316700000,\"longitude\":-73.9802255,\"ping_id\":\"52a183abcf935\",\"rating\":0,\"latitude\":40.6922005,\"creator_id\":\"52980ecae75b8\"}";
+						try {
+							addOrUpdatePing(new Ping(new JSONObject(dummy)));
+						}
+						catch (JSONException e) {
+							e.printStackTrace();
+						}
+						
+						//Eugene plz wake up
+						/*PingServer server = new PingServer();
+						server.startGetPingsTask(userLoc.latitude, userLoc.longitude, tag, new OnResponseListener(){
+							@Override
+							public void onResponse(JSONObject response)
+									throws JSONException {
+								if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
+									Toast.makeText(getActivity(), "Could not get pings", Toast.LENGTH_SHORT).show();
+								else {
+									JSONArray array = response.getJSONArray(PingServer.ASYNC_RESULT);
+									ArrayList<Ping> pings = getPingsFromJSON(array);
+									for (Ping ping : pings)
+										addOrUpdatePing(ping);
+									ArrayList<String> list = new ArrayList<String>();
+									for (String id: mapPings.keySet())
+										list.add(id);
+									SharedPreferences pref = MainFragment.this.getActivity().getSharedPreferences("file", 0);
+									SharedPreferences.Editor edit = pref.edit();
+									if (pref.contains("ids"))
+										edit.remove("ids");
+									HashSet<String> hash = new HashSet<String>(list);
+									edit.putStringSet("ids", hash);
+								}
+							}
+						});*/
 					}
 				});
 				sd.show(getChildFragmentManager(), "SearchDialog");
