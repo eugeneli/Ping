@@ -221,7 +221,7 @@ public class MainFragment extends Fragment {
 					ArrayList<String> list = new ArrayList<String>();
 					for (String id: mapPings.keySet())
 						list.add(id);
-					SharedPreferences pref = MainFragment.this.getActivity().getPreferences(0);
+					SharedPreferences pref = MainFragment.this.getActivity().getSharedPreferences("file", 0);
 					SharedPreferences.Editor edit = pref.edit();
 					if (pref.contains("ids"))
 						edit.remove("ids");

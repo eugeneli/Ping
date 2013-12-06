@@ -10,6 +10,6 @@
     <string name="ping_create">PING</string>
     <string name="ping_submit">SUBMIT</string>
     <string name="ping_hint">What\'s up?</string>
+    <string name="shared_pref">Pref</string>
     <string name="sixteenth_letter_of_the_alphabet_uppercase_for_internationalization_purposes">P</string>
-
 </resources>

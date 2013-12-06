@@ -1,6 +1,8 @@
 package com.cs9033.ping.util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,6 +19,7 @@ import android.app.Service;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -34,7 +37,7 @@ private final String TAG = "UpdateService";
 	
 	private String SERVER_URL;
 	private PingServer server;
-	final Context c = this.getBaseContext();
+	final Context c = this;
 	private int mId;
 	
 	@Override
@@ -63,6 +66,37 @@ private final String TAG = "UpdateService";
 		return null;
 	}
 	
+	public ArrayList<Ping> getPingsFromJSON(JSONArray array) throws JSONException
+	{
+		ArrayList<Ping> pings = new ArrayList<Ping>();
+		for (int n = 0; n < array.length(); n++)
+			pings.add(new Ping(array.getJSONObject(n)));
+		return pings;
+	}
+	
+	private boolean thereAreNewPings(JSONObject response) throws JSONException
+	{
+		SharedPreferences pref = c.getSharedPreferences(getResources().getString(R.string.shared_pref), 0);
+		Set<String> set = pref.getStringSet("ids", new HashSet<String>());
+		HashSet<String> hash = new HashSet<String>(set);
+		
+		JSONArray array = response.getJSONArray(PingServer.ASYNC_RESULT);
+		ArrayList<Ping> pings = getPingsFromJSON(array);
+		HashSet<String> hash2 = new HashSet<String>();
+		
+		for (Ping ping : pings)
+			hash2.add(ping.getServerID());
+		
+		if (hash.size() == hash2.size())
+		{
+			hash.removeAll(hash2);
+			if (hash.size() == 0)
+				return true;
+		}
+		
+		return false;
+	}
+	
 	private class PingListener implements LocationListener
 	{
 	    @Override
@@ -74,6 +108,10 @@ private final String TAG = "UpdateService";
 						throws JSONException {
 					if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
 						Log.d(TAG, "Couldn't get pings");
+					else if (thereAreNewPings(response))
+					{
+						
+					}
 					else {
 						NotificationCompat.Builder mBuilder =
 						        new NotificationCompat.Builder(c)
