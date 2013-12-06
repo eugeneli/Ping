@@ -32,14 +32,14 @@
 	        android:text="@string/ping_create" />
 
         <ImageButton style="@style/BlueButton.Border"
-            android:id="@+id/ping_list"
+            android:id="@+id/ping_search"
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_margin="4dp"
             android:layout_weight="0.2"
             android:contentDescription="@string/app_name"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_view_as_list" />
+            android:src="@drawable/ic_action_search" />
 	    	    
 	    </LinearLayout>
 </RelativeLayout>

@@ -71,6 +71,10 @@ public class PingServer
 	public void startGetPingsTask(double latitude, double longitude, double radius, OnResponseListener onResponse) {
 		new GetPingsTask(onResponse).execute(latitude, longitude, radius, null);
 	}
+	
+	public void startGetPingsTask(double latitude, double longitude, double radius, String hashtag, OnResponseListener onResponse) {
+		new GetPingsTask(onResponse).execute(latitude, longitude, radius, hashtag);
+	}
 
 	public void startGetPingInfoTask(String pingId, OnResponseListener onResponse) {
 		new GetPingInfoTask(onResponse).execute(pingId);
@@ -303,7 +307,7 @@ public class PingServer
 		public static final String JSON_LATITUDE = "latitude";
 		public static final String JSON_LONGITUDE = "longitude";
 		public static final String JSON_RADIUS = "radius";
-		public static final String JSON_HASHTAG = "hashtag";
+		public static final String JSON_HASHTAG = "tag";
 		
 		private static final double METERS_TO_MILES = 0.000621371;
 		public GetPingsTask(OnResponseListener onResponse) {

@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.cs9033.ping.SearchDialog.OnSearchListener;
 import com.cs9033.ping.models.Ping;
 import com.cs9033.ping.util.PingServer;
 import com.cs9033.ping.util.PingServer.OnResponseListener;
@@ -44,6 +45,7 @@ public class MainFragment extends Fragment {
 	public static final String TAG = "MainFragment";
 	private PingActivity activity;
 	private String openMarker = null;
+	private String currentHashtag = null;
 	
 	private class MapPing { //javaaaaaaa y u no tuple
 		public Marker marker;
@@ -172,14 +174,21 @@ public class MainFragment extends Fragment {
 				activity.loadView(CreatePingFragment.TAG);
 			}
 		});
-		((ImageButton) getView().findViewById(R.id.ping_list)).setOnClickListener(new OnClickListener() {
+		((ImageButton) getView().findViewById(R.id.ping_search)).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				/*String id = "52a15fd9bbbf3";
-				Bundle bundle = new Bundle();
-				bundle.putString(Ping.JSON_SERVER_ID, id);
-				activity.loadView(ViewPingFragment.TAG, bundle);*/
-				getAllPings();
+				SearchDialog sd = new SearchDialog();
+				sd.setListener(new OnSearchListener() {
+					@Override
+					public void onSearch(String tag) {
+						if (tag == null || tag.equals(""))
+							currentHashtag = null;
+						else
+							currentHashtag = tag;
+						getAllPings();
+					}
+				});
+				sd.show(getChildFragmentManager(), "SearchDialog");
 			}
 		});
 	}
@@ -255,9 +264,8 @@ public class MainFragment extends Fragment {
 	
 	public void getAllPings()
 	{
-		
 		PingServer server = new PingServer();
-		server.startGetPingsTask(userLoc.latitude, userLoc.longitude, userRadius, new OnResponseListener(){
+		server.startGetPingsTask(userLoc.latitude, userLoc.longitude, userRadius, currentHashtag, new OnResponseListener(){
 			@Override
 			public void onResponse(JSONObject response)
 					throws JSONException {

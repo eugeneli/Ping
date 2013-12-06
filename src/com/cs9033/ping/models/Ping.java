@@ -112,8 +112,8 @@ public class Ping
 		rating = json.getInt(JSON_RATING);
 		message = json.optString(JSON_MESSAGE);
 		String imageStr = json.optString(JSON_IMAGE);
-		if (hasImage && imageStr != null)
-			image = new SerializableBitmap(json.getString(JSON_IMAGE));
+		if (hasImage && !imageStr.equals(""))
+			image = new SerializableBitmap(imageStr);
 		else
 			image = null;
 	}
