@@ -54,7 +54,6 @@ public class MainFragment extends Fragment {
 	private double userRadius = 1;
 	private Circle myCircle;
 	private Map<String, MapPing> mapPings;
-	private ArrayList<Ping> pings;
 	
 	@Override
 	public void onAttach(Activity activity) {
@@ -73,6 +72,10 @@ public class MainFragment extends Fragment {
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putParcelable("myloc", getMap().getCameraPosition());
+		ArrayList<String> list = new ArrayList<String>();
+		for (String id: mapPings.keySet())
+			list.add(id);
+		outState.putStringArrayList("ids", list);
 	}
 	
 	@Override
