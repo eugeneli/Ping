@@ -311,8 +311,10 @@ public class PingServer
 		public void execute(double latitude, double longitude) {
 			JSONObject json = new JSONObject();
 			try {
-				json.put(JSON_LATITUDE, latitude);
-				json.put(JSON_LONGITUDE, longitude);
+				JSONObject internalJSON = new JSONObject();
+				internalJSON.put(JSON_LATITUDE, latitude);
+				internalJSON.put(JSON_LONGITUDE, longitude);
+				json.put(PingServer.JSON_DATA, internalJSON);
 			}
 			catch (JSONException e) {
 				e.printStackTrace();

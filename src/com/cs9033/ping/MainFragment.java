@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.cs9033.ping.SearchDialog.OnSearchListener;
 import com.cs9033.ping.models.Ping;
 import com.cs9033.ping.util.PingServer;
 import com.cs9033.ping.util.PingServer.OnResponseListener;
@@ -35,6 +36,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 public class MainFragment extends Fragment {
@@ -151,14 +153,17 @@ public class MainFragment extends Fragment {
 				activity.loadView(CreatePingFragment.TAG);
 			}
 		});
-		((ImageButton) getView().findViewById(R.id.ping_list)).setOnClickListener(new OnClickListener() {
+		((ImageButton) getView().findViewById(R.id.ping_search)).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				/*String id = "52a15fd9bbbf3";
-				Bundle bundle = new Bundle();
-				bundle.putString(Ping.JSON_SERVER_ID, id);
-				activity.loadView(ViewPingFragment.TAG, bundle);*/
-				getAllPings();
+				SearchDialog sd = new SearchDialog();
+				sd.setListener(new OnSearchListener() {
+					@Override
+					public void onSearch(String tag) {
+						// TODO search by this tag
+					}
+				});
+				sd.show(getChildFragmentManager(), "SearchDialog");
 			}
 		});
 	}
@@ -190,7 +195,7 @@ public class MainFragment extends Fragment {
 			Marker marker = map.addMarker(new MarkerOptions().position(latlng).title(ping.getMessage()));
 			Circle circle = map.addCircle(new CircleOptions()
 				.center(latlng)
-				.radius(ping.getRating())
+				.radius(ping.getRating() + 1)
 				.strokeColor(Color.GRAY)
 				.strokeWidth(2.0f));
 			mapPings.put(ping.getServerID(), new MapPing(marker, circle));
@@ -215,8 +220,15 @@ public class MainFragment extends Fragment {
 	
 	public void getAllPings()
 	{
-		
-		PingServer server = new PingServer();
+		String dummy = "{\"message\":\"Test ping\",\"has_image\":1,\"create_date\":1386316700000,\"longitude\":-73.9802255,\"ping_id\":\"52a183abcf935\",\"rating\":0,\"latitude\":40.6922005,\"creator_id\":\"52980ecae75b8\"}";
+		try {
+			addOrUpdatePing(new Ping(new JSONObject(dummy)));
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+		//Eugene plz wake up
+		/*PingServer server = new PingServer();
 		server.startGetPingsTask(userLoc.latitude, userLoc.longitude, new OnResponseListener(){
 			@Override
 			public void onResponse(JSONObject response)
@@ -239,7 +251,7 @@ public class MainFragment extends Fragment {
 					edit.putStringSet("ids", hash);
 				}
 			}
-		});
+		});*/
 		
 	}
 
