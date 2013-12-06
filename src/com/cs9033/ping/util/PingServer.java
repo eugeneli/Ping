@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -70,7 +71,10 @@ public class PingServer
 	public void startGetPingsTask(double latitude, double longitude, OnResponseListener onResponse) {
 		new GetPingsTask(onResponse).execute(latitude, longitude);
 	}
-	
+
+	public void startGetPingInfoTask(String pingId, OnResponseListener onResponse) {
+		new GetPingInfoTask(onResponse).execute(pingId);
+	}
 	
 	private static class ServerTask extends AsyncTask<JSONObject, Void, String>
 	{
@@ -87,33 +91,52 @@ public class PingServer
 		
 		@Override
 		protected String doInBackground(JSONObject... params) {
-        	// Create a new HttpClient and Post Header
+        	// Create a new HttpClient
             HttpClient httpClient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(SERVER_URL);
-            HttpGet httpGet = new HttpGet(SERVER_URL + "/" + command);
-            
-            //POST data. Add the command first.
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, command));
             
 			try
 			{
 				//Get the passed-in JSON
 				JSONObject json = params[0];
 					
-				//Add to POST data
-				nameValuePairs.add(new BasicNameValuePair(JSON_DATA, json.toString()));
-
-				if (command == "GetPings" || command == "GetPingInfo")
+				if (command == GetPingsTask.JSON_GET_PINGS_COMMAND || command == GetPingInfoTask.JSON_GET_PING_INFO_COMMAND)
 				{
+
+		            StringBuilder getString = new StringBuilder(SERVER_URL)
+		            	.append("?command=").append(command);
+					@SuppressWarnings("unchecked")
+					Iterator<String> paramList = json.keys();
+					while (paramList.hasNext()) {
+						String paramName = paramList.next();
+						try {
+							getString.append('&')
+								.append(paramName)
+								.append('=')
+								.append(json.get(paramName).toString());
+						}
+						catch (JSONException e) {
+							e.printStackTrace();
+						}
+					}
+					
 					//GET to server
+		            HttpGet httpGet = new HttpGet(getString.toString());
 					HttpResponse response = httpClient.execute(httpGet);
 					InputStream is = response.getEntity().getContent();
 		            return convertStreamToString(is);
 				}
 				else
 				{
-					//POST to server
+		            HttpPost httpPost = new HttpPost(SERVER_URL);
+
+		            //POST to server
+		            //POST data. Add the command first.
+		            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+		            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, command));
+		            
+					//Add to POST data
+					nameValuePairs.add(new BasicNameValuePair(JSON_DATA, json.toString()));
+
 		            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 		            HttpResponse response = httpClient.execute(httpPost);
 		            InputStream is = response.getEntity().getContent();
@@ -303,6 +326,26 @@ public class PingServer
 				json.put(JSON_LATITUDE, latitude);
 				json.put(JSON_LONGITUDE, longitude);
 				json.put(JSON_HASHTAG, hashtag);
+			}
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+			execute(json);
+		}
+	}
+	
+	private static class GetPingInfoTask extends ServerTask {
+		private final static String TASK_TAG = "GetPingInfo";
+		private final static String JSON_GET_PING_INFO_COMMAND = "GET_PING_INFO";
+		
+		public GetPingInfoTask(OnResponseListener onResponse) {
+			super(JSON_GET_PING_INFO_COMMAND, TASK_TAG, onResponse);
+		}
+		
+		public void execute(String pingId) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(Ping.JSON_SERVER_ID, pingId);
 			}
 			catch (JSONException e) {
 				e.printStackTrace();
