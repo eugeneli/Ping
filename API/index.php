@@ -147,16 +147,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 						$response[Ping::RATING] = $ping->getRating();
 					}
 					else
-						$response[RESPONSE_CODE] = 3;
+						$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 				}
 				else
-					$response[RESPONSE_CODE] = 4;
+					$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 			}
 			else
-				$response[RESPONSE_CODE] = 5;
+				$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 		}
 		else
-			$response[RESPONSE_CODE] = 6;
+			$response[RESPONSE_CODE] = RESPONSE_FAILURE;
 
 		echo json_encode($response);
 	}
@@ -165,15 +165,19 @@ else if($_SERVER["REQUEST_METHOD"] == "GET")
 {
 	if($_GET[COMMAND] == GET_PINGS) //Get pings within given radius and location
 	{
-		$data = json_decode($_GET[JSON_DATA], true);
+		/*$data = json_decode($_GET[JSON_DATA], true);
 		$userLat = $data[Ping::LATITUDE];
 		$userLon = $data[Ping::LONGITUDE];
-		$radius = $data[User::RADIUS];
+		$radius = $data[User::RADIUS];*/
 
-		if(isset($data[Ping::PING_TAG]))
+		$userLat = $_GET[Ping::LATITUDE];
+		$userLon = $_GET[Ping::LONGITUDE];
+		$radius = $_GET[User::RADIUS];
+
+		if(isset($_GET[Ping::PING_TAG]))
 		{
-			$tag = $data[Ping::PING_TAG];
-			$query = "SELECT ". Ping::ID .", (3959 * acos( cos( radians(". $userLat .") ) * cos( radians(". Ping::LATITUDE .") ) * cos( radians( ". Ping::LONGITUDE ." ) - radians(". $userLon .") ) + sin( radians(". $userLat .") ) * sin( radians(". Ping::LATITUDE .") ) ) ) AS distance 
+			$tag = $_GET[Ping::PING_TAG];
+			$query = "SELECT pings.". Ping::ID .", (3959 * acos( cos( radians(". $userLat .") ) * cos( radians(". Ping::LATITUDE .") ) * cos( radians( ". Ping::LONGITUDE ." ) - radians(". $userLon .") ) + sin( radians(". $userLat .") ) * sin( radians(". Ping::LATITUDE .") ) ) ) AS distance 
 					FROM ". Ping::TABLE_NAME ." INNER JOIN tags ON tags.ping_id = pings.ping_id WHERE tags.tag = :tag HAVING distance < ". $radius ." ORDER BY distance LIMIT 0 , 20;";
 			$stmt = $PDOdb->prepare($query);
 			$stmt->execute(array(':tag' => $tag));
@@ -185,10 +189,6 @@ else if($_SERVER["REQUEST_METHOD"] == "GET")
 			$stmt = $PDOdb->prepare($query);
 			$stmt->execute();
 		}
-
-		/*$userLat = $_GET['lat'];
-		$userLon = $_GET['lon'];
-		$radius = $_GET['rad'];*/
 
 		/*$query = "SELECT ". Ping::ID .", (3959 * acos( cos( radians(". $userLat .") ) * cos( radians(". Ping::LATITUDE .") ) * cos( radians( ". Ping::LONGITUDE ." ) - radians(". $userLon .") ) + sin( radians(". $userLat .") ) * sin( radians(". Ping::LATITUDE .") ) ) ) AS distance 
 					FROM ". Ping::TABLE_NAME ." HAVING distance < ". $radius ." ORDER BY distance LIMIT 0 , 20;";*/
