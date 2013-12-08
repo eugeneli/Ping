@@ -4,6 +4,7 @@ require_once("db.php");
 class Ping
 {
 	const TABLE_NAME = "pings";
+	const TAG_TABLE_NAME = "tags";
 	const ID = "ping_id";
 	const CREATOR_ID = "creator_id";
 	const CREATE_DATE = "create_date";
@@ -80,6 +81,19 @@ class Ping
 				':msg' => $data[self::MESSAGE], 
 				':b64' => $data[self::B64IMAGE]));
 		$affectedRows = $stmt->rowCount();
+
+		//Save tags
+		//Get all tags and store in array
+		preg_match_all('/#([\p{L}\p{Mn}]+)/u',$data[self::MESSAGE],$tags);
+		foreach($tags[1] as $tag)
+		{
+			$tagStmt = $this->db->prepare("INSERT INTO ". self::TAG_TABLE_NAME ." (ping_id, tag) VALUES (:pid, :tag)");
+			$tagStmt->execute(array(
+					':pid' => $data[self::ID],
+					':tag' => $tag
+				));
+		}
+
 
 		if($affectedRows != 0)
 		{
