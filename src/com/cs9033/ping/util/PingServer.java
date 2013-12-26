@@ -16,6 +16,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
@@ -30,13 +31,22 @@ import android.util.Log;
 public class PingServer
 {
 	private final static String TAG = "Server";
-	private final static String SERVER_URL = "http://polychan.org/ping/";
+	private final static String SERVER_URL = "http://polychan.org/ping/api";
 	
-	private final static String JSON_COMMAND = "command";
+	private final static String API_USER_PATH = "/user";
+	private final static String API_USERLOGIN_PATH = "/user/login";
+	private final static String API_PINGS_PATH = "/pings";
+	
 	private final static String JSON_DATA = "json_data";
 	
-	public final static String ASYNC_RESULT = "result";
-	public final static String ASYNC_RESPONSE_CODE = "response_code";
+	public final static String ASYNC_RESPONSE_MESSAGE = "response_message";
+	public final static String ASYNC_RESPONSE_CONTENT = "response_content";
+	
+	public final static String ASYNC_SUCCESS = "success";
+	
+	private static enum HTTPMethod{
+        GET, POST, PUT
+	}
 	
 	public static interface OnResponseListener {
 		public void onResponse(JSONObject response) throws JSONException;
@@ -44,110 +54,155 @@ public class PingServer
 	
 	public PingServer() {}
 	
+	/*
+	 * Method: POST
+	 * URL: SERVER_URL + API_USER_PATH
+	 * Data: JSONObject named JSON_DATA containing key/value pairs Username and Password
+	 */
 	public void startCreateUserTask(String username, String password, OnResponseListener onResponse)
 	{
 		new CreateUserTask(onResponse).execute(username, password);
 	}
 	
+	/*
+	 * Method: POST
+	 * URL: SERVER_URL + API_USERLOGIN_PATH
+	 * Data: JSONObject named JSON_DATA containing key/value pairs Username and Password
+	 */
 	public void startLoginTask(String username, String password, OnResponseListener onResponse)
 	{
 		new LoginTask(onResponse).execute(username, password);
 	}
 	
+	/*
+	 * Method: POST
+	 * URL: SERVER_URL + API_PINGS_PATH
+	 * Data: JSONObject named JSON_DATA, containing key/value pairs UserID, Auth Token, and JSONObject named JSON_PING_DATA which contains all Ping information
+	 */
 	public void startCreatePingTask(User user, Ping ping, OnResponseListener onResponse)
 	{
 		new CreatePingTask(onResponse).execute(user, ping);
 	}
-	
+/*	
 	public void startUpdateLocationTask(double latitude, double longitude, OnResponseListener onResponse)
 	{
 		new UpdateLocationTask(onResponse).execute(latitude, longitude);
 	}
+	*/
 	
+	/*
+	 * Method: PUT
+	 * URL: SERVER_URL + API_PINGS_PATH
+	 * Data: JSONObject named JSON_DATA containing key/value pairs UserID, Auth Token, PingID, and VoteValue
+	 */
 	public void startVotePingTask(User user, Ping ping, int voteValue, OnResponseListener onResponse) {
 		new VotePingTask(onResponse).execute(user, ping, voteValue);
 	}
 	
+	/*
+	 * Method: GET
+	 * URL: SERVER_URL + API_PINGS_PATH
+	 * Data: JSONObject named JSON_DATA containing key/value pairs Latitude, Longitude, and Radius
+	 */
 	public void startGetPingsTask(double latitude, double longitude, double radius, OnResponseListener onResponse) {
 		new GetPingsTask(onResponse).execute(latitude, longitude, radius, null);
 	}
 	
+	//Same as above except with PingTag also inside JSON_DATA
 	public void startGetPingsTask(double latitude, double longitude, double radius, String hashtag, OnResponseListener onResponse) {
 		new GetPingsTask(onResponse).execute(latitude, longitude, radius, hashtag);
 	}
 
+	/*
+	 * Method: GET
+	 * URL: SERVER_URL + API_PINGS_PATH + "/" + [Ping ID]
+	 * Data: None
+	 */
 	public void startGetPingInfoTask(String pingId, OnResponseListener onResponse) {
 		new GetPingInfoTask(onResponse).execute(pingId);
 	}
 	
 	private static class ServerTask extends AsyncTask<JSONObject, Void, String>
 	{
-		private String command;
+		protected String apiMethod;
 		private String taskTag;
 		private OnResponseListener onResponse;
+		private HTTPMethod method;
 		
-		public ServerTask(String command, String taskTag, OnResponseListener onResponse)
+		public ServerTask(HTTPMethod httpMethod, String apiMethod, String taskTag, OnResponseListener onResponse)
 		{
-			this.command = command;
+			this.method = httpMethod;
+			this.apiMethod = apiMethod;
 			this.taskTag = taskTag;
 			this.onResponse = onResponse;
 		}
 		
 		@Override
-		protected String doInBackground(JSONObject... params) {
-        	// Create a new HttpClient
+		protected String doInBackground(JSONObject... params)
+		{
+			String fullAPIPath = SERVER_URL + apiMethod;
+			
+			// Create a new HttpClient
             HttpClient httpClient = new DefaultHttpClient();
             
+            //Get the passed-in JSON
+			JSONObject json = params[0];
+			
 			try
 			{
-				//Get the passed-in JSON
-				JSONObject json = params[0];
-					
-				if (command == GetPingsTask.JSON_GET_PINGS_COMMAND || command == GetPingInfoTask.JSON_GET_PING_INFO_COMMAND)
+				switch(method)
 				{
-
-		            StringBuilder getString = new StringBuilder(SERVER_URL)
-		            	.append("?command=").append(command);
-					@SuppressWarnings("unchecked")
-					Iterator<String> paramList = json.keys();
-					while (paramList.hasNext()) {
-						String paramName = paramList.next();
-						try {
-							getString.append('&')
-								.append(paramName)
-								.append('=')
-								.append(json.get(paramName).toString());
+					case GET:
+			            StringBuilder getString = new StringBuilder(fullAPIPath);
+						@SuppressWarnings("unchecked")
+						Iterator<String> paramList = json.keys();
+						while (paramList.hasNext()) {
+							String paramName = paramList.next();
+							try {
+								getString.append('&')
+									.append(paramName)
+									.append('=')
+									.append(json.get(paramName).toString());
+							}
+							catch (JSONException e) {
+								e.printStackTrace();
+							}
 						}
-						catch (JSONException e) {
-							e.printStackTrace();
-						}
-					}
-					
-					//GET to server
-		            HttpGet httpGet = new HttpGet(getString.toString());
-					HttpResponse response = httpClient.execute(httpGet);
-					InputStream is = response.getEntity().getContent();
-		            return convertStreamToString(is);
+						
+						//GET to server
+			            HttpGet httpGet = new HttpGet(getString.toString());
+						HttpResponse getResponse = httpClient.execute(httpGet);
+						InputStream getContentStream = getResponse.getEntity().getContent();
+			            return convertStreamToString(getContentStream);
+					case POST:
+						HttpPost httpPost = new HttpPost(fullAPIPath);
+	
+			            //POST to server
+			            List<NameValuePair> postNameValuePairs = new ArrayList<NameValuePair>(2);
+			            
+						//Add to POST data
+			            postNameValuePairs.add(new BasicNameValuePair(JSON_DATA, json.toString()));
+						
+						//POST to server
+			            httpPost.setEntity(new UrlEncodedFormEntity(postNameValuePairs));
+			            HttpResponse postResponse = httpClient.execute(httpPost);
+			            InputStream postContentStream = postResponse.getEntity().getContent();
+			            return convertStreamToString(postContentStream);
+					case PUT:
+						HttpPut httpPut = new HttpPut(fullAPIPath);
+	
+			            //POST to server
+			            List<NameValuePair> putNameValuePairs = new ArrayList<NameValuePair>(2);
+			            
+						//Add to POST data
+			            putNameValuePairs.add(new BasicNameValuePair(JSON_DATA, json.toString()));
+						
+						//POST to server
+			            httpPut.setEntity(new UrlEncodedFormEntity(putNameValuePairs));
+			            HttpResponse putResponse = httpClient.execute(httpPut);
+			            InputStream putContentStream = putResponse.getEntity().getContent();
+			            return convertStreamToString(putContentStream);
 				}
-				else
-				{
-		            HttpPost httpPost = new HttpPost(SERVER_URL);
-
-		            //POST to server
-		            //POST data. Add the command first.
-		            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-		            nameValuePairs.add(new BasicNameValuePair(JSON_COMMAND, command));
-		            
-					//Add to POST data
-					nameValuePairs.add(new BasicNameValuePair(JSON_DATA, json.toString()));
-
-		            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-		            HttpResponse response = httpClient.execute(httpPost);
-		            InputStream is = response.getEntity().getContent();
-		            return convertStreamToString(is);
-				}
-	            
-
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			} catch (ClientProtocolException e) {
@@ -180,10 +235,9 @@ public class PingServer
 	private static class CreateUserTask extends ServerTask
 	{
 		private static final String TASK_TAG = "CreateUser";
-		private static final String JSON_CREATE_USER_COMMAND = "CREATE_USER";
 		
 		public CreateUserTask(OnResponseListener onResponse) {
-			super(JSON_CREATE_USER_COMMAND, TASK_TAG, onResponse);
+			super(HTTPMethod.POST, API_USER_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(String username, String password) {
@@ -202,10 +256,9 @@ public class PingServer
 	private static class LoginTask extends ServerTask
 	{
 		private static final String TASK_TAG = "Login";
-		private static final String JSON_LOGIN_COMMAND = "LOGIN_USER";
 		
 		public LoginTask(OnResponseListener onResponse) {
-			super(JSON_LOGIN_COMMAND, TASK_TAG, onResponse);
+			super(HTTPMethod.POST, API_USERLOGIN_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(String username, String password) {
@@ -224,12 +277,11 @@ public class PingServer
 	private static class CreatePingTask extends ServerTask
 	{
 		private static final String TASK_TAG = "CreatePing";
-		private static final String JSON_CREATE_PING_COMMAND = "CREATE_PING";
 		
 		public static final String JSON_PING_DATA = "ping_data";
 		
 		public CreatePingTask(OnResponseListener onResponse) {
-			super(JSON_CREATE_PING_COMMAND, TASK_TAG, onResponse);
+			super(HTTPMethod.POST, API_PINGS_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(User user, Ping ping) {
@@ -246,8 +298,7 @@ public class PingServer
 			execute(json);
 		}
 	}
-	
-	//Successful Response: {"response_code": 0}
+	/*
 	private static class UpdateLocationTask extends ServerTask
 	{
 		private static final String TASK_TAG = "UpdateLoc";
@@ -274,15 +325,13 @@ public class PingServer
 			execute(json);
 		}
     }
-	
+	*/
 	private static class VotePingTask extends ServerTask {
 		private final static String TASK_TAG = "VotePing";
-		private final static String JSON_VOTE_PING_COMMAND = "VOTE_PING";
-		
 		public final static String JSON_VOTE_VALUE = "vote_value";
 		
 		public VotePingTask(OnResponseListener onResponse) {
-			super(JSON_VOTE_PING_COMMAND, TASK_TAG, onResponse);
+			super(HTTPMethod.PUT, API_PINGS_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(User user, Ping ping, int voteValue) {
@@ -302,7 +351,6 @@ public class PingServer
 	
 	private static class GetPingsTask extends ServerTask {
 		private final static String TASK_TAG = "GetPings";
-		private final static String JSON_GET_PINGS_COMMAND = "GET_PINGS";
 		
 		public static final String JSON_LATITUDE = "latitude";
 		public static final String JSON_LONGITUDE = "longitude";
@@ -311,7 +359,7 @@ public class PingServer
 		
 		private static final double METERS_TO_MILES = 0.000621371;
 		public GetPingsTask(OnResponseListener onResponse) {
-			super(JSON_GET_PINGS_COMMAND, TASK_TAG, onResponse);
+			super(HTTPMethod.GET, API_PINGS_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(double latitude, double longitude, double radius, String hashtag) {
@@ -334,16 +382,18 @@ public class PingServer
 	
 	private static class GetPingInfoTask extends ServerTask {
 		private final static String TASK_TAG = "GetPingInfo";
-		private final static String JSON_GET_PING_INFO_COMMAND = "GET_PING_INFO";
 		
 		public GetPingInfoTask(OnResponseListener onResponse) {
-			super(JSON_GET_PING_INFO_COMMAND, TASK_TAG, onResponse);
+			super(HTTPMethod.GET, API_PINGS_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(String pingId) {
 			JSONObject json = new JSONObject();
 			try {
 				json.put(Ping.JSON_SERVER_ID, pingId);
+				
+				//Append pingID to url
+				apiMethod += "/"+pingId;
 			}
 			catch (JSONException e) {
 				e.printStackTrace();
@@ -373,5 +423,4 @@ public class PingServer
 	    }
 	    return sb.toString();
     }
-	
 }

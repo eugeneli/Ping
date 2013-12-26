@@ -181,13 +181,11 @@ public class MainFragment extends Fragment {
 				sd.setListener(new OnSearchListener() {
 					@Override
 					public void onSearch(String tag) {
-<<<<<<< HEAD
 						if (tag == null || tag.equals(""))
 							currentHashtag = null;
 						else
 							currentHashtag = tag;
 						getAllPings();
-=======
 						String dummy = "{\"message\":\"Test ping\",\"has_image\":1,\"create_date\":1386316700000,\"longitude\":-73.9802255,\"ping_id\":\"52a183abcf935\",\"rating\":0,\"latitude\":40.6922005,\"creator_id\":\"52980ecae75b8\"}";
 						try {
 							addOrUpdatePing(new Ping(new JSONObject(dummy)));
@@ -221,7 +219,6 @@ public class MainFragment extends Fragment {
 								}
 							}
 						});*/
->>>>>>> origin/searchbytag
 					}
 				});
 				sd.show(getChildFragmentManager(), "SearchDialog");
@@ -305,7 +302,7 @@ public class MainFragment extends Fragment {
 			@Override
 			public void onResponse(JSONObject response)
 					throws JSONException {
-				if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
+				if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS))
 					Toast.makeText(getActivity(), "Could not get pings", Toast.LENGTH_SHORT).show();
 				else {
 					JSONArray array = response.getJSONArray("pings");

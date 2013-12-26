@@ -47,7 +47,7 @@ public class LoginFragment extends Fragment {
 				ps.startCreateUserTask(name, pass, new OnResponseListener() {
 					@Override
 					public void onResponse(JSONObject response) throws JSONException {
-						if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0) {
+						if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS)) {
 							Toast.makeText(getActivity(), "Could not create account", Toast.LENGTH_SHORT).show();
 							return;	
 						}
@@ -69,7 +69,7 @@ public class LoginFragment extends Fragment {
 				ps.startLoginTask(name, pass, new OnResponseListener() {
 					@Override
 					public void onResponse(JSONObject response) throws JSONException {
-						if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0) {
+						if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS)) {
 							Toast.makeText(getActivity(), "Could not login", Toast.LENGTH_SHORT).show();
 							return;
 						}

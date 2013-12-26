@@ -8,7 +8,7 @@ class Status
 
 	const PING_CREATION_FAILURE = "Ping creation failed";
 	const PINGS_NOT_FOUND = "No pings found";
-	const DUPLICATE_VOTE = "Duplicate vote failed"
-	const PING_VOTE_FAILURE = "Vote failed"
+	const DUPLICATE_VOTE = "Duplicate vote failed";
+	const PING_VOTE_FAILURE = "Vote failed";
 }
 ?>

@@ -83,7 +83,7 @@ public class ViewPingFragment extends Fragment {
 		ps.startGetPingInfoTask(savedInstanceState.getString(Ping.JSON_SERVER_ID), new OnResponseListener() {
 			@Override
 			public void onResponse(JSONObject response) throws JSONException {
-				if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0) {
+				if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS)) {
 					Toast.makeText(getActivity(), "Failed to load ping", Toast.LENGTH_SHORT).show();
 					getActivity().onBackPressed();
 				}
@@ -113,7 +113,7 @@ public class ViewPingFragment extends Fragment {
 		ps.startVotePingTask(activity.getCurrentUser(), ping, 1, new OnResponseListener(){
 			@Override
 			public void onResponse(JSONObject response) throws JSONException {
-				if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0) {
+				if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS)) {
 					Toast.makeText(getActivity(), "The vote didn't register", Toast.LENGTH_SHORT).show();
 				}
 				else {
@@ -129,7 +129,7 @@ public class ViewPingFragment extends Fragment {
 		ps.startVotePingTask(activity.getCurrentUser(), ping, -1, new OnResponseListener(){
 			@Override
 			public void onResponse(JSONObject response) throws JSONException {
-				if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0) {
+				if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS)) {
 					Toast.makeText(getActivity(), "The vote didn't register", Toast.LENGTH_SHORT).show();
 				}
 				else {

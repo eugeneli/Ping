@@ -80,7 +80,7 @@ private final String TAG = "UpdateService";
 		Set<String> set = pref.getStringSet("ids", new HashSet<String>());
 		HashSet<String> hash = new HashSet<String>(set);
 		
-		JSONArray array = response.getJSONArray(PingServer.ASYNC_RESULT);
+		JSONArray array = response.getJSONArray(PingServer.ASYNC_RESPONSE_CONTENT);
 		ArrayList<Ping> pings = getPingsFromJSON(array);
 		HashSet<String> hash2 = new HashSet<String>();
 		
@@ -106,7 +106,7 @@ private final String TAG = "UpdateService";
 				@Override
 				public void onResponse(JSONObject response)
 						throws JSONException {
-					if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
+					if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS))
 						Log.d(TAG, "Couldn't get pings");
 					else if (!thereAreNewPings(response))
 					{

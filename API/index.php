@@ -1,8 +1,8 @@
 <?php
 require_once("db.php");
-require_once("User.class.php");
-require_once("Ping.class.php");
-require_once("Status.class.php");
+require_once("classes/User.class.php");
+require_once("classes/Ping.class.php");
+require_once("classes/Status.class.php");
 
 define("JSON_DATA", "json_data");
 define("JSON_PING_DATA", "ping_data");

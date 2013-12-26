@@ -78,7 +78,7 @@ public class CreatePingFragment extends Fragment {
 					@Override
 					public void onResponse(JSONObject response)
 							throws JSONException {
-						if (response.getInt(PingServer.ASYNC_RESPONSE_CODE) == 0)
+						if (!response.getString(PingServer.ASYNC_RESPONSE_MESSAGE).equals(PingServer.ASYNC_SUCCESS))
 							Toast.makeText(getActivity(), "Could not create ping", Toast.LENGTH_SHORT).show();
 						else {
 							ping = null;
