@@ -22,6 +22,7 @@ $app->get('/', function () use ($app) {
 
 //Get all pings in radius around location
 $app->get('/pings', function() {
+    global $PDOdb;
     $userLat = $_GET[Ping::LATITUDE];
     $userLon = $_GET[Ping::LONGITUDE];
     $radius = $_GET[User::RADIUS];
