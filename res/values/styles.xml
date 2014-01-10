@@ -1,4 +1,4 @@
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources>
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -15,23 +15,6 @@
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-    </style>
-    
-    <style name="BlueButton" parent="@android:style/Widget.Button">
-        <item name="android:background">@drawable/button</item>
-        <item name="android:textColor">@color/button_text</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">36sp</item>
-    </style>
-    
-    <style name="BlueButton.Border">
-        <item name="android:background">@drawable/button_border</item>
-    </style>
-    <style name="VotingButton" parent="@android:style/Widget.Button">
-        <item name="android:background">@drawable/vote_button</item>
-        <item name="android:textColor">@color/button_text</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">36sp</item>
     </style>
 
 </resources>

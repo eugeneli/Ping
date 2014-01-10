@@ -1,45 +1,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent" >
     
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/map"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-    
-    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </RelativeLayout>
+
+    <SeekBar
+        android:id="@+id/slider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:padding="16dp">
-        
-        <Button style="@style/BlueButton.Border"
-            android:id="@+id/login"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.2"
-            android:layout_margin="4dp"
-            android:text="@string/sixteenth_letter_of_the_alphabet_uppercase_for_internationalization_purposes" />
-        
-	    <Button style="@style/BlueButton.Border"
-	        android:id="@+id/ping_create"
-	        android:layout_width="0dip"
-	        android:layout_height="wrap_content"
-	        android:layout_weight="0.6"
-	        android:layout_margin="4dp"
-	        android:text="@string/ping_create" />
-
-        <ImageButton style="@style/BlueButton.Border"
-            android:id="@+id/ping_search"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:layout_margin="4dp"
-            android:layout_weight="0.2"
-            android:contentDescription="@string/app_name"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_search" />
-	    	    
-	    </LinearLayout>
+        android:layout_alignParentLeft="true" />
+   
 </RelativeLayout>
