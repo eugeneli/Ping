@@ -69,7 +69,7 @@ $app->get('/pings', function() {
 });
 
 //Get specific ping
-$app->get('/pings/:id', function($id) {
+$app->get('/ping/:id', function($id) {
     $ping = new Ping();
     $pingExists = $ping->getPingById($id);
 
@@ -137,7 +137,7 @@ $app->post('/user/login',function () {
 
 
 //POST create new ping
-$app->post('/pings',function () {
+$app->post('/ping',function () {
     $data = json_decode($_POST[JSON_DATA], true);
     $pingData = $data[JSON_PING_DATA];
     $userId = $data[User::ID];
@@ -174,7 +174,7 @@ $app->post('/pings',function () {
 
 
 // PUT route
-$app->put('/pings',function () {
+$app->put('/ping',function () {
     $data = json_decode($_POST[JSON_DATA], true);
     $userId = $data[User::ID];
     $authToken = $data[User::AUTH];

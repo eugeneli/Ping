@@ -35,10 +35,9 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f090004;
+        public static final int action_settings=0x7f090003;
         public static final int map=0x7f090002;
         public static final int pager_header=0x7f090001;
-        public static final int slider=0x7f090003;
         public static final int viewpager=0x7f090000;
     }
     public static final class layout {

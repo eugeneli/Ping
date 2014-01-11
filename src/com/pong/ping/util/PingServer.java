@@ -32,17 +32,19 @@ public class PingServer
 {
 	private final static String TAG = "Server";
 	private final static String SERVER_URL = "http://polychan.org/ping/api";
-	
+
 	private final static String API_USER_PATH = "/user";
 	private final static String API_USERLOGIN_PATH = "/user/login";
 	private final static String API_PINGS_PATH = "/pings";
+	private final static String API_SINGLE_PING_PATH = "/ping";
 	
 	private final static String JSON_DATA = "json_data";
 	
-	public final static String ASYNC_RESPONSE_MESSAGE = "response_message";
+	public final static String ASYNC_RESPONSE_STATUS = "response_status";
 	public final static String ASYNC_RESPONSE_CONTENT = "response_content";
 	
 	public final static String ASYNC_SUCCESS = "success";
+	public final static String ASYNC_NO_PINGS_FOUND = "No pings found";
 	
 	private static enum HTTPMethod{
         GET, POST, PUT
@@ -76,7 +78,7 @@ public class PingServer
 	
 	/*
 	 * Method: POST
-	 * URL: SERVER_URL + API_PINGS_PATH
+	 * URL: SERVER_URL + API_SINGLE_PING_PATH
 	 * Data: JSONObject named JSON_DATA, containing key/value pairs UserID, Auth Token, and JSONObject named JSON_PING_DATA which contains all Ping information
 	 */
 	public void startCreatePingTask(User user, Ping ping, OnResponseListener onResponse)
@@ -92,7 +94,7 @@ public class PingServer
 	
 	/*
 	 * Method: PUT
-	 * URL: SERVER_URL + API_PINGS_PATH
+	 * URL: SERVER_URL + API_SINGLE_PING_PATH
 	 * Data: JSONObject named JSON_DATA containing key/value pairs UserID, Auth Token, PingID, and VoteValue
 	 */
 	public void startVotePingTask(User user, Ping ping, int voteValue, OnResponseListener onResponse) {
@@ -115,7 +117,7 @@ public class PingServer
 
 	/*
 	 * Method: GET
-	 * URL: SERVER_URL + API_PINGS_PATH + "/" + [Ping ID]
+	 * URL: SERVER_URL + API_SINGLE_PING_PATH + "/" + [Ping ID]
 	 * Data: None
 	 */
 	public void startGetPingInfoTask(String pingId, OnResponseListener onResponse) {
@@ -156,13 +158,25 @@ public class PingServer
 			            StringBuilder getString = new StringBuilder(fullAPIPath);
 						@SuppressWarnings("unchecked")
 						Iterator<String> paramList = json.keys();
+						boolean firstParam = true;
 						while (paramList.hasNext()) {
 							String paramName = paramList.next();
 							try {
-								getString.append('&')
+								if(firstParam)
+								{
+									getString.append('?')
 									.append(paramName)
 									.append('=')
 									.append(json.get(paramName).toString());
+									firstParam = false;
+								}
+								else
+								{
+									getString.append('&')
+									.append(paramName)
+									.append('=')
+									.append(json.get(paramName).toString());
+								}
 							}
 							catch (JSONException e) {
 								e.printStackTrace();
@@ -172,6 +186,7 @@ public class PingServer
 						//GET to server
 			            HttpGet httpGet = new HttpGet(getString.toString());
 						HttpResponse getResponse = httpClient.execute(httpGet);
+						System.out.println(getString.toString());
 						InputStream getContentStream = getResponse.getEntity().getContent();
 			            return convertStreamToString(getContentStream);
 					case POST:
@@ -281,7 +296,7 @@ public class PingServer
 		public static final String JSON_PING_DATA = "ping_data";
 		
 		public CreatePingTask(OnResponseListener onResponse) {
-			super(HTTPMethod.POST, API_PINGS_PATH, TASK_TAG, onResponse);
+			super(HTTPMethod.POST, API_SINGLE_PING_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(User user, Ping ping) {
@@ -331,7 +346,7 @@ public class PingServer
 		public final static String JSON_VOTE_VALUE = "vote_value";
 		
 		public VotePingTask(OnResponseListener onResponse) {
-			super(HTTPMethod.PUT, API_PINGS_PATH, TASK_TAG, onResponse);
+			super(HTTPMethod.PUT, API_SINGLE_PING_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(User user, Ping ping, int voteValue) {
@@ -384,7 +399,7 @@ public class PingServer
 		private final static String TASK_TAG = "GetPingInfo";
 		
 		public GetPingInfoTask(OnResponseListener onResponse) {
-			super(HTTPMethod.GET, API_PINGS_PATH, TASK_TAG, onResponse);
+			super(HTTPMethod.GET, API_SINGLE_PING_PATH, TASK_TAG, onResponse);
 		}
 		
 		public void execute(String pingId) {

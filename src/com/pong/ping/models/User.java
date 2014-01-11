@@ -3,6 +3,8 @@ package com.pong.ping.models;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class User
 {
 	private String name; //Display name
@@ -10,6 +12,7 @@ public class User
 	private double radius; //Radius to receive pings
 	private int numPingsRemaining; //Limit a user's number of pings per day
 	private String authToken; //Authentication token to access API
+	private LatLng location;
 	
 	//JSON Constants
 	public static final String JSON_USER_NAME = "name";
@@ -42,6 +45,9 @@ public class User
 	
 	public void setAuthToken(String token) { authToken = token; }
 	public String getAuthToken() { return authToken; }
+	
+	public void setLocation(LatLng loc) { location = loc; }
+	public LatLng getLocation() { return location; }
 	
 	//Serialization methods
 	public JSONObject toJSON() throws JSONException
