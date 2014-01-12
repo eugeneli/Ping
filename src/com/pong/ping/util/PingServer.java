@@ -354,7 +354,7 @@ public class PingServer
 			try {
 				json.put(User.JSON_USER_ID, user.getUserID());
 				json.put(User.JSON_AUTH_TOKEN, user.getAuthToken());
-				json.put(Ping.JSON_SERVER_ID, ping.getServerID());
+				json.put(Ping.SERVER_ID, ping.getServerID());
 				json.put(JSON_VOTE_VALUE, Integer.signum(voteValue)); // -1, 0, or 1
 			}
 			catch (JSONException e) {
@@ -405,7 +405,7 @@ public class PingServer
 		public void execute(String pingId) {
 			JSONObject json = new JSONObject();
 			try {
-				json.put(Ping.JSON_SERVER_ID, pingId);
+				json.put(Ping.SERVER_ID, pingId);
 				
 				//Append pingID to url
 				apiMethod += "/"+pingId;

@@ -10,15 +10,15 @@ import com.pong.ping.util.SerializableBitmap;
 public class Ping
 {
 	//JSON constants
-	public static final String JSON_SERVER_ID = "ping_id";
-	public static final String JSON_CREATOR_ID = "creator_id";
-	public static final String JSON_CREATION_DATE = "create_date";
-	public static final String JSON_LAT = "latitude";
-	public static final String JSON_LON = "longitude";
-	public static final String JSON_HAS_IMAGE = "has_image";
-	public static final String JSON_RATING = "rating";
-	public static final String JSON_MESSAGE = "message";
-	public static final String JSON_IMAGE = "b64image";
+	public static final String SERVER_ID = "ping_id";
+	public static final String CREATOR_ID = "creator_id";
+	public static final String CREATION_DATE = "create_date";
+	public static final String LATITUDE = "latitude";
+	public static final String LONGITUDE = "longitude";
+	public static final String HAS_IMAGE = "has_image";
+	public static final String RATING = "rating";
+	public static final String MESSAGE = "message";
+	public static final String IMAGE = "b64image";
 	
 	//metadata
 	private String serverID; //UUID on server
@@ -80,38 +80,38 @@ public class Ping
 	public JSONObject toJSON() throws JSONException
 	{
 		JSONObject json = new JSONObject();
-		json.put(JSON_SERVER_ID, serverID);
-		json.put(JSON_CREATOR_ID, creatorID);
-		json.put(JSON_CREATION_DATE, creationDate);
+		json.put(SERVER_ID, serverID);
+		json.put(CREATOR_ID, creatorID);
+		json.put(CREATION_DATE, creationDate);
 		
-		json.put(JSON_LAT, coordinates[0]);
-		json.put(JSON_LON, coordinates[1]);
+		json.put(LATITUDE, coordinates[0]);
+		json.put(LONGITUDE, coordinates[1]);
 		
-		json.put(JSON_HAS_IMAGE, hasImage ? 1 : 0);
-		json.put(JSON_RATING, rating);
-		json.put(JSON_MESSAGE, message);
+		json.put(HAS_IMAGE, hasImage ? 1 : 0);
+		json.put(RATING, rating);
+		json.put(MESSAGE, message);
 		if (hasImage)
-			json.put(JSON_IMAGE, image.getBase64());
+			json.put(IMAGE, image.getBase64());
 		else
-			json.put(JSON_IMAGE, JSONObject.NULL);
+			json.put(IMAGE, JSONObject.NULL);
 
 		return json;
 	}
 	
 	public void fromJSON(JSONObject json) throws JSONException
 	{
-		serverID = json.optString(JSON_SERVER_ID);
-		creatorID = json.getString(JSON_CREATOR_ID);
-		creationDate = json.getLong(JSON_CREATION_DATE);
+		serverID = json.optString(SERVER_ID);
+		creatorID = json.getString(CREATOR_ID);
+		creationDate = json.getLong(CREATION_DATE);
 		
 		coordinates = new double[2];
-		coordinates[0] = json.getDouble(JSON_LAT);
-		coordinates[1] = json.getDouble(JSON_LON);
+		coordinates[0] = json.getDouble(LATITUDE);
+		coordinates[1] = json.getDouble(LONGITUDE);
 		
-		hasImage = json.getInt(JSON_HAS_IMAGE) == 1;
-		rating = json.getInt(JSON_RATING);
-		message = json.optString(JSON_MESSAGE);
-		String imageStr = json.optString(JSON_IMAGE);
+		hasImage = json.getInt(HAS_IMAGE) == 1;
+		rating = json.getInt(RATING);
+		message = json.optString(MESSAGE);
+		String imageStr = json.optString(IMAGE);
 		if (hasImage && !imageStr.equals(""))
 			image = new SerializableBitmap(imageStr);
 		else

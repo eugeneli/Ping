@@ -131,7 +131,7 @@ public class MapFragment extends Fragment
 					if (marker.getId().equals(openMarker)) {
 						String id = markerIdToId.get(marker.getId());
 						Bundle bundle = new Bundle();
-						bundle.putString(Ping.JSON_SERVER_ID, id);
+						bundle.putString(Ping.SERVER_ID, id);
 						//activity.loadView(ViewPingFragment.TAG, bundle); TODO: VIEWPINGFRAGMENT!
 						return true;
 					}
